@@ -15,17 +15,15 @@ h1 {
     margin-bottom: 0;
     color: #551A8B;
     
-    /* Aplicar la nueva fuente gótica */
+    /* Aplicar la fuente gótica */
     font-family: 'UnifrakturMaguntia', cursive;
-    font-size: 3.5rem; /* Un poco más grande para lucir el diseño de la fuente */
+    font-size: 7.5rem;
     letter-spacing: 1px;
     
-    /* Borde negro sutil alrededor de las letras usando sombras difuminadas */
-    text-shadow: 
-        -1px -1px 1px rgba(0, 0, 0, 0.4),  
-         1px -1px 1px rgba(0, 0, 0, 0.4),
-        -1px  1px 1px rgba(0, 0, 0, 0.4),
-         1px  1px 1px rgba(0, 0, 0, 0.4);
+    /* Borde negro puro, súper definido y delgado (0.5px o 1px) */
+    -webkit-text-stroke: 1px #000000;
+    
+    /* Eliminamos el text-shadow anterior para quitar lo borroso */
 }
 
 .subtitle {
