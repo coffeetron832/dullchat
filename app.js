@@ -235,7 +235,7 @@ function initPeer(userId, isHost, targetRoomId = null) {
         setupConnectionTrack(conn);
     });
 
-    // NUEVO: Escuchar solicitudes entrantes de transmisión por voz
+    // Escuchar solicitudes entrantes de transmisión por voz
     peer.on('call', (call) => {
         if (localStream) {
             call.answer(localStream);
@@ -321,7 +321,7 @@ function setupConnectionTrack(conn) {
         
         playBitSound("join");
 
-        // NUEVO: Al unirse un peer, si ya inicializamos hardware de voz, lo llamamos directamente
+        // Al unirse un peer, si ya inicializamos hardware de voz, lo llamamos directamente
         if (localStream) {
             const call = peer.call(conn.peer, localStream);
             handleIncomingCall(call);
@@ -381,14 +381,25 @@ function handleIncomingCall(call) {
     });
 }
 
-// --- CAPTURA DE HARDWARE Y ANALIZADOR DE ESPECTRO ---
+// --- CAPTURA DE HARDWARE Y ANALIZADOR DE ESPECTRO (CORREGIDO PARA EVITAR DISTORSIÓN EN PC) ---
 async function initLocalAudio() {
     try {
         if (audioCtx.state === 'suspended') {
             await audioCtx.resume();
         }
 
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        // Restricciones aplicadas para corregir clipping y saturación agresiva en ordenadores
+        const constraints = {
+            audio: {
+                echoCancellation: true,      // Previene feedback acústico
+                noiseSuppression: true,      // Limpia siseos y ventiladores
+                autoGainControl: false,      // DESACTIVADO: Evita amplificación digital artificial destructiva
+                latency: { ideal: 0.02 }     // Fuerza baja latencia
+            },
+            video: false
+        };
+
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
         // Crear el pipeline de análisis de Web Audio API
         const source = audioCtx.createMediaStreamSource(localStream);
@@ -661,7 +672,7 @@ destroyRoomBtn.addEventListener("click", () => {
 
     } else {
         const confirmLeave = confirm("¿Seguro que deseas abandonar la sala?");
-        if (!confirmDelete) return; // Mantiene la lógica estructural idéntica
+        if (!confirmLeave) return; // Corregido el flag de validación local de salida
 
         if (peer) peer.destroy();
         updateConnectionStatusUI('offline');
