@@ -300,3 +300,24 @@ button:hover {
     max-width: 600px;
     margin: 10px auto 0 auto;
 }
+
+
+.disclaimer {
+    font-size: 0.75rem;
+    color: #999;
+    cursor: help; /* Cambia el cursor a un signo de interrogación */
+    border-bottom: 1px dotted #999;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.disclaimer:hover {
+    color: #551A8B; /* El color de tu marca al pasar el mouse */
+    border-bottom: 1px solid #551A8B;
+}
+
+.disclaimer span {
+    font-size: 0.7rem;
+    text-decoration: underline;
+    margin-left: 5px;
+}
