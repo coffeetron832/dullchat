@@ -10,7 +10,7 @@ const shareLinkEl = document.getElementById("shareLink");
 const copyLinkBtn = document.getElementById("copyLink");
 const destroyRoomBtn = document.getElementById("destroyRoom");
 
-// --- NUEVOS ELEMENTOS DEL DOM PARA CONTROL DE ESTADO ---
+// --- ELEMENTOS DEL DOM PARA CONTROL DE ESTADO ---
 const roleEl = document.getElementById("role");
 const connectedCountEl = document.getElementById("connectedCount");
 const participantsListEl = document.getElementById("participantsList");
@@ -22,6 +22,7 @@ const messagesContainer = document.getElementById("messages");
 // --- VARIABLES GLOBALES DE PEERJS ---
 let peer = null;
 let connections = []; // Guardará las conexiones activas con otros peers
+let isRoomActive = true; // Controla si la sala sigue vigente
 
 function generateUserId() {
     const number = Math.floor(1000 + Math.random() * 9000);
@@ -41,22 +42,18 @@ function generateRoomId() {
 
 // --- FUNCIÓN PARA ACTUALIZAR LA LISTA DE PARTICIPANTES EN PANTALLA ---
 function updateParticipantsUI() {
-    // Limpiamos la lista por completo
     participantsListEl.innerHTML = "";
 
-    // Agregamos a nuestro propio usuario primero
     const myLi = document.createElement("li");
     myLi.innerHTML = `<strong>${userIdEl.textContent}</strong> (Tú)`;
     participantsListEl.appendChild(myLi);
 
-    // Iteramos sobre las conexiones activas para añadir al resto
     connections.forEach(conn => {
         const li = document.createElement("li");
         li.textContent = conn.peer;
         participantsListEl.appendChild(li);
     });
 
-    // Actualizamos el contador numérico de conectados (nosotros + el tamaño del array de conexiones)
     connectedCountEl.textContent = connections.length + 1;
 }
 
@@ -74,14 +71,18 @@ function initPeer(userId, isHost, targetRoomId = null) {
         }
     });
 
-    // Escuchar conexiones entrantes (importante para el Host)
     peer.on('connection', (conn) => {
         setupConnectionTrack(conn);
     });
 
     peer.on('error', (err) => {
         console.error('Error en PeerJS:', err);
-        alert("Ocurrió un error en la conexión: " + err.type);
+        // Si el host no existe o cerró la sala antes de que el invitado entrara
+        if (err.type === 'peer-not-found' && !isHost) {
+            handleRoomDestructionByHost("La sala a la que intentas acceder ya no existe.");
+        } else {
+            alert("Ocurrió un error en la conexión: " + err.type);
+        }
     });
 }
 
@@ -97,17 +98,23 @@ function setupConnectionTrack(conn) {
         console.log("Conectado con éxito a: " + conn.peer);
         connections.push(conn);
         
-        // Refrescar la interfaz y notificar en el chat
         updateParticipantsUI();
         appendMessage("Sistema", `Usuario ${conn.peer} se ha unido.`, "system");
     });
 
-    // Escuchar mensajes de texto recibidos
+    // Escuchar datos recibidos
     conn.on('data', (data) => {
+        // DETECTAR MENSAJE DE CONTROL: Sala destruida por el anfitrión
+        if (data.type === "ROOM_DESTROYED") {
+            handleRoomDestructionByHost("El anfitrión ha destruido la sala. Redirigiendo...");
+            return;
+        }
+
+        // Si es un mensaje de texto normal
         appendMessage(data.sender, data.text, "received");
         
-        // Si eres el Host, reenvías este mensaje al resto para que todos lo lean
-        if (roomIdEl.textContent === peer.id) {
+        // Si eres el Host, reenvías este mensaje al resto
+        if (roleEl.textContent === "Anfitrión") {
             broadcastMessage(data, conn.peer);
         }
     });
@@ -116,10 +123,44 @@ function setupConnectionTrack(conn) {
         console.log("Conexión cerrada con: " + conn.peer);
         connections = connections.filter(c => c.peer !== conn.peer);
         
-        // Refrescar la interfaz tras la salida y notificar
         updateParticipantsUI();
         appendMessage("Sistema", `Usuario ${conn.peer} ha salido.`, "system");
+
+        // Si eres invitado y la conexión con el Host se cae abruptamente (ej. cerró la pestaña)
+        if (roleEl.textContent === "Invitado" && connections.length === 0) {
+            handleRoomDestructionByHost("Se perdió la conexión con el anfitrión. La sala ya no está disponible.");
+        }
     });
+}
+
+// --- FUNCIÓN PARA EXPULSAR A LOS INVITADOS CUANDO LA SALA SE ROMPE ---
+function handleRoomDestructionByHost(alertMessage) {
+    isRoomActive = false;
+    alert(alertMessage);
+    
+    if (peer) {
+        peer.destroy();
+    }
+    
+    // Devolver al inicio y limpiar todo
+    resetAppToHome();
+}
+
+// --- LIMPIAR INTERFAZ Y VOLVER A HOME ---
+function resetAppToHome() {
+    roomIdEl.textContent = "";
+    userIdEl.textContent = "";
+    roomCapacityEl.textContent = "";
+    roleEl.textContent = "-";
+    shareLinkEl.value = "";
+    messagesContainer.innerHTML = ""; 
+    participantsListEl.innerHTML = "<li>Cargando...</li>";
+
+    roomSection.classList.add("hidden");
+    homeSection.classList.remove("hidden");
+
+    // Limpiar parámetros de la URL
+    window.history.pushState({}, document.title, window.location.pathname);
 }
 
 // --- ENVIAR MENSAJE A TODOS ---
@@ -148,25 +189,28 @@ createRoomBtn.addEventListener("click", () => {
 
     const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
 
-    // Actualizaciones de la interfaz de la sala
     roomIdEl.textContent = roomId;
     userIdEl.textContent = userId;
     roomCapacityEl.textContent = capacity;
-    roleEl.textContent = "Anfitrión"; // Corregido: Muestra Rol Dinámico
+    roleEl.textContent = "Anfitrión"; 
     shareLinkEl.value = link;
+    
+    // Configurar botón para el Anfitrión
+    destroyRoomBtn.textContent = "Destruir sala";
+    destroyRoomBtn.classList.add("danger");
 
     homeSection.classList.add("hidden");
     roomSection.classList.remove("hidden");
 
-    // Dibujar lista inicial con solo el Host presente
+    isRoomActive = true;
     updateParticipantsUI();
-
-    // Inicializar PeerJS como Host
     initPeer(roomId, true);
 });
 
 // --- ENVIAR MENSAJE (CLICK) ---
 sendBox.addEventListener("click", () => {
+    if (!isRoomActive) return;
+
     const text = messageInput.value.trim();
     if (!text) return;
 
@@ -195,20 +239,21 @@ window.addEventListener("DOMContentLoaded", () => {
     if (roomParam) {
         const myUserId = generateUserId();
         
-        // Actualizaciones de la interfaz del invitado
         roomIdEl.textContent = roomParam;
         userIdEl.textContent = myUserId;
-        roomCapacityEl.textContent = "N/A"; // Corregido: Capacidad N/A asignada explícitamente
-        roleEl.textContent = "Invitado";    // Corregido: Muestra Rol Dinámico
+        roomCapacityEl.textContent = "N/A"; 
+        roleEl.textContent = "Invitado";    
         shareLinkEl.value = window.location.href;
+
+        // Cambiar dinámicamente el botón para el Invitado
+        destroyRoomBtn.textContent = "Abandonar sala";
+        destroyRoomBtn.classList.remove("danger"); // Opcional: quitar estilo rojo si prefieres
 
         homeSection.classList.add("hidden");
         roomSection.classList.remove("hidden");
 
-        // Dibujar lista inicial con solo el Invitado presente
+        isRoomActive = true;
         updateParticipantsUI();
-
-        // Inicializar PeerJS como invitado
         initPeer(myUserId, false, roomParam);
     }
 });
@@ -223,27 +268,30 @@ copyLinkBtn.addEventListener("click", async () => {
     }
 });
 
-// --- DESTRUIR / SALIR DE SALA ---
+// --- BOTÓN ACCIÓN: DESTRUIR (HOST) O ABANDONAR (INVITADO) ---
 destroyRoomBtn.addEventListener("click", () => {
-    const confirmDelete = confirm("Esta acción te desconectará de la sala.");
-    if (!confirmDelete) return;
+    if (roleEl.textContent === "Anfitrión") {
+        // Lógica del Anfitrión
+        const confirmDelete = confirm("Esta acción eliminará la sala permanentemente para todos.");
+        if (!confirmDelete) return;
 
-    if (peer) {
-        peer.destroy(); 
+        // 1. Avisar a todos los invitados conectados antes de apagar el nodo
+        broadcastMessage({ type: "ROOM_DESTROYED" });
+
+        // 2. Dar un margen mínimo para que los paquetes se envíen y destruir
+        setTimeout(() => {
+            if (peer) peer.destroy();
+            resetAppToHome();
+            alert("Sala destruida.");
+        }, 100);
+
+    } else {
+        // Lógica del Invitado
+        const confirmLeave = confirm("¿Seguro que deseas abandonar la sala?");
+        if (!confirmLeave) return;
+
+        if (peer) peer.destroy();
+        resetAppToHome();
+        alert("Has abandonado la sala.");
     }
-
-    roomIdEl.textContent = "";
-    userIdEl.textContent = "";
-    roomCapacityEl.textContent = "";
-    roleEl.textContent = "-";
-    shareLinkEl.value = "";
-    messagesContainer.innerHTML = ""; 
-    participantsListEl.innerHTML = "<li>Cargando...</li>";
-
-    roomSection.classList.add("hidden");
-    homeSection.classList.remove("hidden");
-
-    window.history.pushState({}, document.title, window.location.pathname);
-
-    alert("Te has desconectado.");
 });
