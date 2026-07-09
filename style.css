@@ -281,45 +281,39 @@ button:hover {
 }
 
 
+/* ==========================================================================
+   FOOTER (Compacto y elegante)
+   ========================================================================== */
 .app-footer {
     text-align: center;
-    margin-top: 30px; /* Reducido de 50px a 30px */
-    padding: 10px 20px; /* Reducido de 20px a 10px arriba/abajo */
-    font-size: 0.75rem; /* Un poco más pequeño para mayor elegancia */
-    color: #888;
+    margin-top: 15px; /* Reducido al mínimo */
+    padding: 8px 0;   /* Mínimo espacio vertical */
+    font-size: 0.7rem;
+    color: #999;
     border-top: 1px solid #eee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
 }
 
-/* Ponemos los elementos en una línea para ahorrar altura */
 .app-footer p {
-    display: inline-block;
-    margin: 0 10px; /* Espaciado lateral entre items */
+    margin: 0; /* Elimina márgenes extra */
 }
 
-/* Ajuste específico para el disclaimer */
 .disclaimer {
-    display: inline-block;
     cursor: help;
     border-bottom: 1px dotted #999;
-}
-
-
-.disclaimer {
-    font-size: 0.75rem;
-    color: #999;
-    cursor: help; /* Cambia el cursor a un signo de interrogación */
-    border-bottom: 1px dotted #999;
-    display: inline-block;
     transition: all 0.3s ease;
+    text-decoration: none; /* Quitamos subrayado base */
 }
 
 .disclaimer:hover {
-    color: #551A8B; /* El color de tu marca al pasar el mouse */
+    color: #551A8B;
     border-bottom: 1px solid #551A8B;
 }
 
 .disclaimer span {
-    font-size: 0.7rem;
     text-decoration: underline;
-    margin-left: 5px;
+    margin-left: 4px;
 }
