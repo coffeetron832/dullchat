@@ -279,3 +279,24 @@ button:hover {
     background: #b00000;
     color: #fff;
 }
+
+
+.app-footer {
+    text-align: center;
+    margin-top: 50px;
+    padding: 20px;
+    font-size: 0.8rem;
+    color: #888;
+    border-top: 1px solid #eee;
+}
+
+.app-footer p {
+    margin: 5px 0;
+}
+
+.app-footer .disclaimer {
+    font-style: italic;
+    color: #aaa;
+    max-width: 600px;
+    margin: 10px auto 0 auto;
+}
