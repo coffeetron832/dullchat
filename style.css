@@ -239,7 +239,7 @@ button:hover {
    SIDEBAR PANEL (Participantes arriba, Metadatos abajo)
    ========================================================================== */
 .sidebar-panel {
-    flex: 1;
+    flex: 1.1;
     min-width: 270px;
     display: flex;
     flex-direction: column;
