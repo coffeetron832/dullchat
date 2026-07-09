@@ -22,7 +22,7 @@ body {
     font-family: Arial, sans-serif;
     color: #222;
     background: #fff;
-    line-height: 1.5;
+    line-height: 1.2;
     
     /* Flexbox vertical para controlar el layout de la pantalla completa */
     display: flex;
