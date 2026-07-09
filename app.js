@@ -80,9 +80,15 @@ function initPeer(userId, isHost, targetRoomId = null) {
 
     peer.on('error', (err) => {
         console.error('Error en PeerJS:', err);
-        // Si el host no existe o cerró la sala antes de que el invitado entrara
+        
+        // CORRECCIÓN: Si la sala no existe o ya fue eliminada en la red
         if (err.type === 'peer-not-found' && !isHost) {
-            handleRoomDestructionByHost("La sala a la que intentas acceder ya no existe.");
+            isRoomActive = false;
+            if (peer) peer.destroy();
+            
+            // Regresa directamente a home sin mostrar la sala rota
+            resetAppToHome();
+            alert("La sala a la que intentas acceder ya no existe o el enlace es inválido.");
         } else {
             alert("Ocurrió un error en la conexión: " + err.type);
         }
@@ -101,22 +107,26 @@ function setupConnectionTrack(conn) {
         console.log("Conectado con éxito a: " + conn.peer);
         connections.push(conn);
         
+        // CORRECCIÓN: Revelamos la interfaz de la sala para el Invitado SÓLO si la conexión P2P se abrió con éxito
+        if (roleEl.textContent === "Invitado" && roomSection.classList.contains("hidden")) {
+            brandHeader.classList.add("hidden");
+            homeSection.classList.add("hidden");
+            roomSection.classList.remove("hidden");
+        }
+        
         updateParticipantsUI();
         appendMessage("Sistema", `Usuario ${conn.peer} se ha unido.`, "system");
     });
 
     // Escuchar datos recibidos
     conn.on('data', (data) => {
-        // DETECTAR MENSAJE DE CONTROL: Sala destruida por el anfitrión
         if (data.type === "ROOM_DESTROYED") {
             handleRoomDestructionByHost("El anfitrión ha destruido la sala. Redirigiendo...");
             return;
         }
 
-        // Si es un mensaje de texto normal
         appendMessage(data.sender, data.text, "received");
         
-        // Si eres el Host, reenvías este mensaje al resto
         if (roleEl.textContent === "Anfitrión") {
             broadcastMessage(data, conn.peer);
         }
@@ -129,7 +139,6 @@ function setupConnectionTrack(conn) {
         updateParticipantsUI();
         appendMessage("Sistema", `Usuario ${conn.peer} ha salido.`, "system");
 
-        // Si eres invitado y la conexión con el Host se cae abruptamente (ej. cerró la pestaña)
         if (roleEl.textContent === "Invitado" && connections.length === 0) {
             handleRoomDestructionByHost("Se perdió la conexión con el anfitrión. La sala ya no está disponible.");
         }
@@ -145,7 +154,6 @@ function handleRoomDestructionByHost(alertMessage) {
         peer.destroy();
     }
     
-    // Devolver al inicio y limpiar todo
     resetAppToHome();
 }
 
@@ -162,10 +170,9 @@ function resetAppToHome() {
     roomSection.classList.add("hidden");
     homeSection.classList.remove("hidden");
     
-    // Volver a mostrar el logo gótico y eslogan al regresar al inicio
     brandHeader.classList.remove("hidden");
 
-    // Limpiar parámetros de la URL
+    // Limpiar parámetros de la URL devolviendo la barra de direcciones al estado original
     window.history.pushState({}, document.title, window.location.pathname);
 }
 
@@ -201,11 +208,10 @@ createRoomBtn.addEventListener("click", () => {
     roleEl.textContent = "Anfitrión"; 
     shareLinkEl.value = link;
     
-    // Configurar botón para el Anfitrión
     destroyRoomBtn.textContent = "Destruir sala";
     destroyRoomBtn.classList.add("danger");
 
-    // Ocultar logo y cambiar de sección con el efecto CSS configurado
+    // El host monta su propia sala instantáneamente
     brandHeader.classList.add("hidden");
     homeSection.classList.add("hidden");
     roomSection.classList.remove("hidden");
@@ -253,15 +259,11 @@ window.addEventListener("DOMContentLoaded", () => {
         roleEl.textContent = "Invitado";    
         shareLinkEl.value = window.location.href;
 
-        // Cambiar dinámicamente el botón para el Invitado
         destroyRoomBtn.textContent = "Abandonar sala";
         destroyRoomBtn.classList.remove("danger"); 
 
-        // Ocultar logo y cambiar de sección al entrar directo por link
-        brandHeader.classList.add("hidden");
-        homeSection.classList.add("hidden");
-        roomSection.classList.remove("hidden");
-
+        // CAMBIO AQUÍ: Al cargar por link, dejamos la UI en Home ("Cargando...") 
+        // mientras PeerJS intenta rastrear al host en la red P2P.
         isRoomActive = true;
         updateParticipantsUI();
         initPeer(myUserId, false, roomParam);
@@ -281,14 +283,11 @@ copyLinkBtn.addEventListener("click", async () => {
 // --- BOTÓN ACCIÓN: DESTRUIR (HOST) O ABANDONAR (INVITADO) ---
 destroyRoomBtn.addEventListener("click", () => {
     if (roleEl.textContent === "Anfitrión") {
-        // Lógica del Anfitrión
         const confirmDelete = confirm("Esta acción eliminará la sala permanentemente para todos.");
         if (!confirmDelete) return;
 
-        // 1. Avisar a todos los invitados conectados antes de apagar el nodo
         broadcastMessage({ type: "ROOM_DESTROYED" });
 
-        // 2. Dar un margen mínimo para que los paquetes se envíen y destruir
         setTimeout(() => {
             if (peer) peer.destroy();
             resetAppToHome();
@@ -296,7 +295,6 @@ destroyRoomBtn.addEventListener("click", () => {
         }, 100);
 
     } else {
-        // Lógica del Invitado
         const confirmLeave = confirm("¿Seguro que deseas abandonar la sala?");
         if (!confirmLeave) return;
 
