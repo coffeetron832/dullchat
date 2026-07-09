@@ -283,22 +283,24 @@ button:hover {
 
 .app-footer {
     text-align: center;
-    margin-top: 50px;
-    padding: 20px;
-    font-size: 0.8rem;
+    margin-top: 30px; /* Reducido de 50px a 30px */
+    padding: 10px 20px; /* Reducido de 20px a 10px arriba/abajo */
+    font-size: 0.75rem; /* Un poco más pequeño para mayor elegancia */
     color: #888;
     border-top: 1px solid #eee;
 }
 
+/* Ponemos los elementos en una línea para ahorrar altura */
 .app-footer p {
-    margin: 5px 0;
+    display: inline-block;
+    margin: 0 10px; /* Espaciado lateral entre items */
 }
 
-.app-footer .disclaimer {
-    font-style: italic;
-    color: #aaa;
-    max-width: 600px;
-    margin: 10px auto 0 auto;
+/* Ajuste específico para el disclaimer */
+.disclaimer {
+    display: inline-block;
+    cursor: help;
+    border-bottom: 1px dotted #999;
 }
 
 
