@@ -66,6 +66,14 @@ function playBitSound(type) {
         gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
         osc.start(now);
         osc.stop(now + 0.12);
+    } else if (type === "error") {
+        // Sonido descendente y áspero para errores o salas no disponibles
+        osc.frequency.setValueAtTime(293.66, now); // Nota D4
+        osc.frequency.setValueAtTime(220.00, now + 0.1); // Nota A3
+        gainNode.gain.setValueAtTime(0.12, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
     }
 }
 
@@ -211,18 +219,24 @@ function initPeer(userId, isHost, targetRoomId = null) {
         switch (err.type) {
             case 'peer-not-found':
             case 'peer-unavailable':
+                // SONIDO: Sala caída o no existente
+                playBitSound("error");
                 alert("La sala a la que intentas acceder ya no existe, está llena o el enlace es inválido.");
                 break;
             case 'network':
+                playBitSound("error");
                 alert("Hubo un problema con tu conexión a internet. Por favor, verifica tu red.");
                 break;
             case 'disconnected':
+                playBitSound("error");
                 alert("Te has desconectado del servidor de emparejamiento. Volviendo al menú principal.");
                 break;
             case 'browser-incompatible':
+                playBitSound("error");
                 alert("Tu navegador no es compatible con la tecnología P2P de esta aplicación.");
                 break;
             default:
+                playBitSound("error");
                 alert("No se pudo establecer la conexión con la sala en este momento.");
                 break;
         }
@@ -258,6 +272,8 @@ function setupConnectionTrack(conn) {
     // Escuchar datos recibidos (Procesamiento asíncrono para descifrar)
     conn.on('data', async (data) => {
         if (data.type === "ROOM_DESTROYED") {
+            // SONIDO: La sala en la que estabas fue destruida por el Host
+            playBitSound("error");
             handleRoomDestructionByHost("El anfitrión ha cerrado esta sala. Redirigiendo al inicio...");
             return;
         }
@@ -283,6 +299,7 @@ function setupConnectionTrack(conn) {
         appendMessage("Sistema", `Usuario ${conn.peer} ha salido.`, "system");
 
         if (roleEl.textContent === "Invitado" && connections.length === 0) {
+            playBitSound("error");
             handleRoomDestructionByHost("Se perdió la conexión con el anfitrión. La sala ya no está disponible.");
         }
     });
