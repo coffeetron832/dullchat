@@ -31,6 +31,44 @@ let isRoomActive = true; // Controla si la sala sigue vigente
 const CRYPTO_SALT = new TextEncoder().encode("DullChatSalt2026");
 let cryptoKey = null; // Guardará la clave simétrica generada en tiempo de ejecución
 
+// --- SINTETIZADOR DE SONIDOS BITS (WEB AUDIO API) ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playBitSound(type) {
+    // Asegurar que el contexto de audio se active tras interacción del usuario
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
+    const osc = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    osc.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    // Tipo de onda cuadrada le da ese toque "retro/8-bit"
+    osc.type = "square"; 
+
+    const now = audioCtx.currentTime;
+
+    if (type === "join") {
+        // Sonido ascendente de dos tonos para cuando alguien se une
+        osc.frequency.setValueAtTime(523.25, now); // Nota C5
+        osc.frequency.setValueAtTime(659.25, now + 0.08, now + 0.08); // Nota E5
+        gainNode.gain.setValueAtTime(0.1, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+    } else if (type === "message") {
+        // Sonido corto y agudo para cuando llega un mensaje
+        osc.frequency.setValueAtTime(880.00, now); // Nota A5
+        gainNode.gain.setValueAtTime(0.08, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
+    }
+}
+
 // Derivar una clave AES-GCM a partir del roomId usando PBKDF2
 async function deriveKeyFromRoomId(roomId) {
     const encoder = new TextEncoder();
@@ -212,6 +250,9 @@ function setupConnectionTrack(conn) {
         
         updateParticipantsUI();
         appendMessage("Sistema", `Usuario ${conn.peer} se ha unido.`, "system");
+        
+        // SONIDO: Se unió alguien a la sala
+        playBitSound("join");
     });
 
     // Escuchar datos recibidos (Procesamiento asíncrono para descifrar)
@@ -224,6 +265,9 @@ function setupConnectionTrack(conn) {
         // E2EE: Descifrar el payload antes de inyectarlo en el DOM
         const decryptedText = await decryptMessage(data.text);
         appendMessage(data.sender, decryptedText, "received");
+        
+        // SONIDO: Mensaje entrante recibido
+        playBitSound("message");
         
         if (roleEl.textContent === "Anfitrión") {
             // El host retransmite el mensaje tal y como llegó (ya cifrado) a los demás nodos
