@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>dullchat</title>
-
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>dullchat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -17,7 +16,6 @@
         Conversaciones privadas y temporales.
     </p>
 
-    <!-- Pantalla inicial -->
     <div id="home">
 
         <label for="capacity">
@@ -37,7 +35,6 @@
 
     </div>
 
-    <!-- Sala -->
     <div id="room" class="hidden">
 
         <h2>DullChat</h2>
@@ -73,10 +70,9 @@
 
         <hr>
 
-        <!-- Compartir sala -->
         <div class="share-box">
 
-            <label>
+            <label for="shareLink">
                 Enlace para compartir
             </label>
 
@@ -94,7 +90,6 @@
 
         <hr>
 
-        <!-- Participantes -->
         <div class="participants">
 
             <h3>Participantes</h3>
@@ -107,15 +102,12 @@
 
         <hr>
 
-        <!-- Mensajes -->
         <div class="chat-container">
 
             <div id="messages">
-
-                <div class="system-message">
-                    Bienvenido a DullChat.
+                <div class="message system">
+                    <strong>Sistema:</strong> Bienvenido a DullChat.
                 </div>
-
             </div>
 
             <div class="message-box">
@@ -128,7 +120,7 @@
                     autocomplete="off"
                 >
 
-                <button id="sendMessage">
+                <button id="sendBox">
                     Enviar
                 </button>
 
@@ -138,18 +130,16 @@
 
         <hr>
 
-        <!-- Estado -->
         <div class="status">
 
             <p id="connectionStatus">
-                Desconectado
+                Conectado a la red P2P
             </p>
 
         </div>
 
         <hr>
 
-        <!-- Solo anfitrión -->
         <button
             id="destroyRoom"
             class="danger"
@@ -161,10 +151,8 @@
 
 </div>
 
-<!-- PeerJS -->
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
-<!-- Aplicación -->
 <script src="app.js"></script>
 
 </body>
