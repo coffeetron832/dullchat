@@ -468,6 +468,9 @@ button:hover {
     /* Ajustes generales del viewport */
     h1 {
         font-size: 4rem; /* Evita desbordamiento horizontal en Home */
+        -webkit-font-smoothing: antialiased;    /* Suaviza bordes en WebKit (iOS/Chrome) */
+        -moz-osx-font-smoothing: grayscale;       /* Suaviza bordes en Firefox OS X */
+        -webkit-text-stroke: 0.5px #000000;      /* Reduce el grosor del borde en pantallas pequeñas */
     }
 
     body:has(#room:not(.hidden)) h1 {
