@@ -379,20 +379,28 @@ button:hover {
 
 
 /* ==========================================================================
-   AJUSTES DEL SELECTOR DE EMOJIS (PICMO) - NÍTIDO
+   AJUSTES DEL SELECTOR DE EMOJIS (PICMO) - NÍTIDO Y CON FONDO SÓLIDO
    ========================================================================== */
 #emojiPickerWrapper {
+    position: absolute !important;
     bottom: 42px !important;
-    left: 0;
+    left: 0 !important;
+    z-index: 9999 !important; /* Asegura que se monte POR ENCIMA de los mensajes */
 }
 
-/* Modificamos las variables nativas de Picmo para redimensionarlo sin romper los píxeles */
+/* Forzamos el tamaño y el fondo en el contenedor nativo de Picmo */
+#emojiPickerWrapper .picmo__picker,
 #emojiPickerWrapper .picker-container,
 #emojiPickerWrapper [data-picker] {
-    --picker-width: 280px;      /* Ancho original aproximado era ~350px */
-    --picker-height: 320px;     /* Alto original aproximado era ~400px */
-    font-size: 13px !important; /* Achica los textos y los emojis internamente de forma nativa */
-    border-radius: 0 !important; /* Mantiene la estética cuadrada de dullchat */
+    --picker-width: 280px !important;      /* Reducción de ancho estricta */
+    --picker-height: 320px !important;     /* Reducción de alto estricta */
+    width: 280px !important;               /* Atajo por si la variable falla */
+    height: 320px !important;              /* Atajo por si la variable falla */
+    background-color: #ffffff !important;  /* Fondo sólido para que NO sea transparente */
+    font-size: 13px !important;            /* Achica textos y emojis de forma nativa */
+    border-radius: 0 !important;           /* Mantiene la estética cuadrada de dullchat */
+    border: 1px solid #ccc !important;     /* Borde a juego con el diseño retro */
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1) !important; /* Sombra sólida estilo dullchat */
 }
 
 /* Ajuste complementario para el botón 😊 */
@@ -402,7 +410,10 @@ button:hover {
     border: 1px solid #ccc;
     border-radius: 0; 
     padding: 6px 10px;
+    cursor: pointer;
 }
+
+
 
 
 .status-indicator {
