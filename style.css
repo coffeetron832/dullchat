@@ -239,8 +239,9 @@ button:hover {
    SIDEBAR PANEL (Participantes arriba, Metadatos abajo)
    ========================================================================== */
 .sidebar-panel {
-    flex: 1.1;
-    min-width: 270px;
+    flex: 1; /* Regresamos a 1 para que no sea tan dominante */
+    max-width: 320px; /* Limitamos su ancho máximo para que el chat siempre tenga espacio */
+    min-width: 250px; /* Un poco menos de ancho mínimo */
     display: flex;
     flex-direction: column;
     justify-content: space-between; 
