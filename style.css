@@ -431,3 +431,31 @@ button:hover {
     text-decoration: underline;
     margin-left: 4px;
 }
+
+
+/* ==========================================================================
+   VU METER COMPACTO (TRES COLORES COHERENTES)
+   ========================================================================== */
+.vu-container {
+    display: flex;
+    flex-direction: column; /* Apiladas verticalmente */
+    justify-content: space-between;
+    width: 8px;
+    height: 32px; /* Alineado al alto promedio del botón */
+    align-self: center;
+    gap: 2px;
+    margin-right: 2px; /* Separación sutil del botón del mic */
+}
+
+.vu-bar {
+    flex: 1;
+    width: 100%;
+    background-color: #ccc;
+    opacity: 0.25; /* Apagado por defecto */
+    transition: opacity 0.05s ease; /* Transición ultra veloz para respuesta inmediata */
+}
+
+/* Colores encendidos */
+.vu-bar.vu-green.lit  { background-color: #2ecc71; opacity: 1; box-shadow: 0 0 4px #2ecc71; }
+.vu-bar.vu-yellow.lit { background-color: #f1c40f; opacity: 1; box-shadow: 0 0 4px #f1c40f; }
+.vu-bar.vu-red.lit    { background-color: #e74c3c; opacity: 1; box-shadow: 0 0 4px #e74c3c; }
