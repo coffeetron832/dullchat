@@ -1,3 +1,6 @@
+/* Importar la fuente UnifrakturMaguntia desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap');
+
 body {
     font-family: Arial, sans-serif;
     max-width: 760px;
@@ -11,6 +14,18 @@ body {
 h1 {
     margin-bottom: 0;
     color: #551A8B;
+    
+    /* Aplicar la nueva fuente gótica */
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 3.5rem; /* Un poco más grande para lucir el diseño de la fuente */
+    letter-spacing: 1px;
+    
+    /* Borde negro sutil alrededor de las letras usando sombras difuminadas */
+    text-shadow: 
+        -1px -1px 1px rgba(0, 0, 0, 0.4),  
+         1px -1px 1px rgba(0, 0, 0, 0.4),
+        -1px  1px 1px rgba(0, 0, 0, 0.4),
+         1px  1px 1px rgba(0, 0, 0, 0.4);
 }
 
 .subtitle {
