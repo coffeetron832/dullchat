@@ -184,19 +184,19 @@ button:hover {
     flex: 3;
     display: flex;
     flex-direction: column;
-    border: 1px solid #ddd;
-    border-radius: 0; /* Totalmente cuadrado */
-    padding: 15px;
-    background: #fdfdfd;
+    border: none; /* CORRECCIÓN: Quitamos el borde exterior redundante */
+    border-radius: 0; 
+    padding: 0; /* CORRECCIÓN: Limpiamos los paddings duplicados */
+    background: transparent; /* CORRECCIÓN: Se mimetiza con el fondo de la app */
 }
 
 /* Área interna donde se acumulan los mensajes */
 #messages {
     flex-grow: 1; 
     overflow-y: auto;
-    border: 1px solid #eee;
+    border: 1px solid #ddd; /* CORRECCIÓN: Le damos un color un poco más firme */
     background: #fff;
-    padding: 10px;
+    padding: 15px; /* Un poco más de aire interno para los mensajes */
     margin-bottom: 12px;
     border-radius: 0; /* Totalmente cuadrado */
 }
