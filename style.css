@@ -376,3 +376,37 @@ button:hover {
     text-decoration: underline;
     margin-left: 4px;
 }
+
+
+/* ==========================================================================
+   AJUSTES DEL SELECTOR DE EMOJIS (PICMO)
+   ========================================================================== */
+#emojiPickerWrapper {
+    /* Ajusta la posición para que no tape el input al hacerse más pequeño */
+    bottom: 45px !important; 
+    left: 0;
+    
+    /* Cambia el punto de origen de la transformación a la esquina inferior izquierda */
+    transform-origin: bottom left; 
+    
+    /* Escala el menú al 85% de su tamaño original (puedes probar con 0.8 o 0.75 si lo quieres aún más chico) */
+    transform: scale(0.85); 
+    
+    /* Suaviza la aparición al hacer click */
+    transition: transform 0.2s ease; 
+}
+
+/* Opcional: Aseguramos que mantenga la estética cuadrada de dullchat */
+#emojiPickerWrapper .picker-container, 
+#emojiPickerWrapper picker-container {
+    border-radius: 0 !important;
+}
+
+/* Ajuste rápido para el botón 😊 para que mantenga el estilo sin bordes redondeados */
+#emojiBtn {
+    background: #f7f7f7;
+    color: #551A8B;
+    border: 1px solid #ccc;
+    border-radius: 0; /* Totalmente cuadrado */
+    padding: 6px 10px;
+}
