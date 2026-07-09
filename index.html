@@ -49,10 +49,26 @@
                             </div>
                         </div>
 
-                        <div id="emojiPickerWrapper" style="position: absolute; bottom: 50px; left: 0; z-index: 1000; display: none;"></div>
+                        <div id="emojiPickerWrapper" class="hidden"></div>
 
                         <div class="message-box">
                             <button id="emojiBtn" type="button" title="Insertar emoji">😊</button>
+                            
+                            <div id="vuMeter" class="vu-container">
+                                <div class="vu-bar vu-red"></div>
+                                <div class="vu-bar vu-yellow"></div>
+                                <div class="vu-bar vu-green"></div>
+                            </div>
+
+                            <button id="micBtn" type="button" class="mic-muted" title="Activar/Silenciar Micrófono">
+                                <svg id="micIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" x2="12" y1="19" y2="22"></line>
+                                    <line x1="2" x2="22" y1="2" y2="22" stroke="currentColor" stroke-width="2"></line>
+                                </svg>
+                            </button>
+
                             <input
                                 type="text"
                                 id="messageInput"
@@ -64,6 +80,8 @@
                                 Enviar
                             </button>
                         </div>
+
+                        <div id="remoteAudios" style="display: none;"></div>
 
                     </div>
 
@@ -92,13 +110,13 @@
                             </div>
 
                             <div class="status-meta">
-    <div class="status-indicator">
-        <svg id="signalIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 20h.01M7 20v-4M12 20v-8M17 20v-12M22 20v-4" />
-        </svg>
-        <span id="connectionStatus">Conectado</span>
-    </div>
-</div>
+                                <div class="status-indicator">
+                                    <svg id="signalIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 20h.01M7 20v-4M12 20v-8M17 20v-12M22 20v-4" />
+                                    </svg>
+                                    <span id="connectionStatus">Conectado</span>
+                                </div>
+                            </div>
 
                             <button id="destroyRoom" class="danger">
                                 Destruir sala
@@ -119,26 +137,24 @@
         <p><a href="https://github.com/coffeetron832/dullchat" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;"><strong>dullchat</strong></a> v1.0.0</p>
         <p>&copy; 2026 | jahp. Todos los derechos reservados.</p>
         
-        <p class="disclaimer" title="dullchat opera de forma 100% serverless mediante conexiones WebRTC directas entre navegadores. Toda la comunicación se cifra localmente en tu dispositivo en modo de extremo a extremo (E2EE), garantizando privacidad absoluta fuera del alcance de terceros.">
+        <p class="disclaimer" title="dullchat opera de forma 100% serverless mediante conexiones WebRTC directas entre navegadores. Al no existir servidores intermediarios, es técnicamente imposible almacenar registros (logs), metadatos o historiales de conversación. Toda la comunicación se cifra localmente en tu dispositivo en modo de extremo a extremo (E2EE), garantizando privacidad absoluta fuera del alcance de terceros.">
             Privacidad<span>(Más información)</span>
         </p>
     </footer>
     
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/picmo@5.8.5/dist/umd/index.js"></script>
+    
     <script>
         const wrapper = document.getElementById('emojiPickerWrapper');
         let picker;
 
         try {
-            // Renderizamos Picmo directamente en nuestro contenedor controlado
             picker = picmo.createPicker({
                 rootElement: wrapper,
                 theme: 'light'
             });
 
-            // Al seleccionar un emoji, lo inserta en tu input
             picker.addEventListener('emoji:select', (selection) => {
                 const input = document.getElementById('messageInput');
                 input.value += selection.emoji;
@@ -148,22 +164,16 @@
             console.error("Error al cargar Picmo:", error);
         }
 
-        // Manejo del evento click en tu botón 😊 para mostrar/ocultar de forma nativa
         document.getElementById('emojiBtn').addEventListener('click', (e) => {
             e.stopPropagation();
             if (wrapper) {
-                if (wrapper.style.display === 'none') {
-                    wrapper.style.display = 'block';
-                } else {
-                    wrapper.style.display = 'none';
-                }
+                wrapper.classList.toggle('hidden');
             }
         });
 
-        // Ocultar el picker si se hace clic en cualquier otra parte de la pantalla externa
         document.addEventListener('click', (e) => {
             if (wrapper && !wrapper.contains(e.target) && e.target.id !== 'emojiBtn') {
-                wrapper.style.display = 'none';
+                wrapper.classList.add('hidden');
             }
         });
     </script>
