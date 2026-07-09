@@ -24,12 +24,22 @@ body {
     background: #fff;
     line-height: 1.5;
     
-    /* Flexbox para centrar dinámicamente el contenedor en la ventana */
+    /* Flexbox vertical para forzar el Sticky Footer */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+/* Contenedor wrapper que empujará al footer al fondo */
+.main-wrapper {
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
     box-sizing: border-box;
+    width: 100%;
 }
 
 /* El contenedor principal se ajusta pero no toma toda la pantalla en Home */
@@ -280,40 +290,42 @@ button:hover {
     color: #fff;
 }
 
-
 /* ==========================================================================
-   FOOTER (Compacto y elegante)
+   FOOTER (Línea única, ultracompacto y sticky)
    ========================================================================== */
 .app-footer {
     text-align: center;
-    margin-top: 15px; /* Reducido al mínimo */
-    padding: 8px 0;   /* Mínimo espacio vertical */
+    padding: 12px 20px;
     font-size: 0.7rem;
     color: #999;
     border-top: 1px solid #eee;
+    background: #fff;
+    
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .app-footer p {
-    margin: 0; /* Elimina márgenes extra */
+    margin: 0;
 }
 
 .disclaimer {
     cursor: help;
     border-bottom: 1px dotted #999;
-    transition: all 0.3s ease;
-    text-decoration: none; /* Quitamos subrayado base */
+    transition: color 0.2s, border-color 0.2s;
 }
 
 .disclaimer:hover {
-    color: #551A8B;
+    color: #551A8B; 
     border-bottom: 1px solid #551A8B;
 }
 
 .disclaimer span {
+    font-size: 0.65rem;
     text-decoration: underline;
     margin-left: 4px;
 }
