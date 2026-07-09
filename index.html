@@ -8,113 +8,116 @@
 </head>
 <body>
 
-<div class="container">
+    <div class="main-wrapper">
+        <div class="container">
 
-    <div id="brand-header">
-        <h1>dullchat</h1>
-        <p class="subtitle">
-            Crea salas privadas en un clic. Comunicación directa entre usuarios, lo que se habla aquí, se queda aquí.
-        </p>
-    </div>
+            <div id="brand-header">
+                <h1>dullchat</h1>
+                <p class="subtitle">
+                    Crea salas privadas en un clic. Comunicación directa entre usuarios, lo que se habla aquí, se queda aquí.
+                </p>
+            </div>
 
-    <div id="home">
+            <div id="home">
 
-        <label for="capacity">
-            Capacidad de integrantes en la sala
-        </label>
+                <label for="capacity">
+                    Capacidad de integrantes en la sala
+                </label>
 
-        <select id="capacity">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-        </select>
+                <select id="capacity">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                </select>
 
-        <button id="createRoom">
-            Crear sala
-        </button>
-
-    </div>
-
-    <div id="room" class="hidden">
-
-        <div class="room-main-layout">
-            
-            <div class="chat-container">
-
-                <div id="messages">
-                    <div class="message system">
-                        <strong>Sistema:</strong> Bienvenido a DullChat.
-                    </div>
-                </div>
-
-                <div class="message-box">
-                    <input
-                        type="text"
-                        id="messageInput"
-                        placeholder="Escribe un mensaje..."
-                        maxlength="1000"
-                        autocomplete="off"
-                    >
-                    <button id="sendBox">
-                        Enviar
-                    </button>
-                </div>
+                <button id="createRoom">
+                    Crear sala
+                </button>
 
             </div>
 
-            <div class="sidebar-panel">
+            <div id="room" class="hidden">
 
-                <div class="participants-section">
-                    <h3>Participantes</h3>
-                    <ul id="participantsList">
-                        <li>Cargando...</li>
-                    </ul>
-                </div>
-
-                <div class="room-meta-section">
+                <div class="room-main-layout">
                     
-                    <div class="info-meta">
-                        <p><strong>Sala:</strong> <span id="roomId">-</span></p>
-                        <p><strong>Tu ID:</strong> <span id="userId">-</span></p>
-                        <p><strong>Rol:</strong> <span id="role">-</span></p>
-                        <p><strong>Capacidad:</strong> <span id="roomCapacity">-</span></p>
-                        <p><strong>Conectados:</strong> <span id="connectedCount">1</span></p>
+                    <div class="chat-container">
+
+                        <div id="messages">
+                            <div class="message system">
+                                <strong>Sistema:</strong> Bienvenido a DullChat.
+                            </div>
+                        </div>
+
+                        <div class="message-box">
+                            <input
+                                type="text"
+                                id="messageInput"
+                                placeholder="Escribe un mensaje..."
+                                maxlength="1000"
+                                autocomplete="off"
+                            >
+                            <button id="sendBox">
+                                Enviar
+                            </button>
+                        </div>
+
                     </div>
 
-                    <div class="share-meta-box">
-                        <input type="text" id="shareLink" readonly placeholder="Enlace de la sala">
-                        <button id="copyLink">Copiar enlace</button>
-                    </div>
+                    <div class="sidebar-panel">
 
-                    <div class="status-meta">
-                        <p id="connectionStatus">Conectado a la red P2P</p>
-                    </div>
+                        <div class="participants-section">
+                            <h3>Participantes</h3>
+                            <ul id="participantsList">
+                                <li>Cargando...</li>
+                            </ul>
+                        </div>
 
-                    <button id="destroyRoom" class="danger">
-                        Destruir sala
-                    </button>
+                        <div class="room-meta-section">
+                            
+                            <div class="info-meta">
+                                <p><strong>Sala:</strong> <span id="roomId">-</span></p>
+                                <p><strong>Tu ID:</strong> <span id="userId">-</span></p>
+                                <p><strong>Rol:</strong> <span id="role">-</span></p>
+                                <p><strong>Capacidad:</strong> <span id="roomCapacity">-</span></p>
+                                <p><strong>Conectados:</strong> <span id="connectedCount">1</span></p>
+                            </div>
+
+                            <div class="share-meta-box">
+                                <input type="text" id="shareLink" readonly placeholder="Enlace de la sala">
+                                <button id="copyLink">Copiar enlace</button>
+                            </div>
+
+                            <div class="status-meta">
+                                <p id="connectionStatus">Conectado a la red P2P</p>
+                            </div>
+
+                            <button id="destroyRoom" class="danger">
+                                Destruir sala
+                            </button>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
             </div>
 
         </div>
-
     </div>
 
     <footer class="app-footer">
-    <p><strong>dullchat</strong> v1.0.0</p>
-    <p>&copy; 2026 | jahp. Todos los derechos reservados.</p>
+        <p><strong>dullchat</strong> v1.0.0</p>
+        <p>&copy; 2026 | jahp. Todos los derechos reservados.</p>
+        
+        <p class="disclaimer" title="dullchat no tiene servidores, no guarda logs y cifra tu comunicación punto a punto.">
+            Privacidad. <span>(Más información)</span>
+        </p>
+    </footer>
     
-    <p class="disclaimer" title="dullchat no tiene servidores, no guarda logs y cifra tu comunicación punto a punto.">
-        Privacidad.<span>(Más información)</span>
-    </p>
-</footer>
-</div>
-    
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-<script src="app.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <script src="app.js"></script>
 
 </body>
 </html>
