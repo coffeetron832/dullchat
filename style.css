@@ -24,14 +24,14 @@ body {
     background: #fff;
     line-height: 1.5;
     
-    /* Flexbox vertical principal */
+    /* Flexbox vertical para controlar el layout de la pantalla completa */
     display: flex;
     flex-direction: column;
-    height: 100vh; /* Fuerza al body a medir exactamente la ventana */
+    min-height: 100vh;
     box-sizing: border-box;
 }
 
-/* Contenedor wrapper que empujará al footer al fondo */
+/* Contenedor wrapper que aloja todo el contenido central */
 .main-wrapper {
     flex: 1;
     display: flex;
@@ -40,7 +40,6 @@ body {
     padding: 20px;
     box-sizing: border-box;
     width: 100%;
-    overflow: hidden; /* Evita scrolls dobles extraños */
 }
 
 /* El contenedor principal se ajusta pero no toma toda la pantalla en Home */
@@ -58,14 +57,21 @@ body {
 }
 
 /* ==========================================================================
-   CASCADA CRÍTICA: FORZAR ALTURA CUANDO LA SALA ESTÁ ACTIVA
+   SOLUCIÓN DE EXPANSIÓN VERTICAL ESTRICTA (Sala Activa)
    ========================================================================== */
+body:has(#room:not(.hidden)) {
+    height: 100vh; /* Bloquea el body al alto exacto del navegador */
+    overflow: hidden; /* Evita que aparezcan barras de scroll en la ventana global */
+}
+
 body:has(#room:not(.hidden)) .main-wrapper {
-    align-items: stretch; /* Obliga al contenedor a estirarse de arriba a abajo */
+    align-items: stretch; /* Estira el wrapper para ocupar todo el espacio entre el header y el footer */
+    height: calc(100vh - 41px); /* Resta dinámicamente el tamaño exacto del footer */
+    padding: 10px 20px;
 }
 
 body:has(#room:not(.hidden)) .container {
-    height: 100%; /* Toma el 100% del wrapper estirado */
+    height: 100%;
     display: flex;
     flex-direction: column;
 }
@@ -73,7 +79,7 @@ body:has(#room:not(.hidden)) .container {
 body:has(#room:not(.hidden)) #room {
     display: flex;
     flex-direction: column;
-    flex: 1; /* Ocupa todo el alto disponible dentro de .container */
+    flex: 1;
     height: 100%;
 }
 
@@ -94,6 +100,15 @@ h1 {
     
     /* Borde negro puro, súper definido y delgado */
     -webkit-text-stroke: 1px #000000;
+}
+
+/* Si entramos a la sala, reducimos un poco el header para que no robe tanto espacio vertical */
+body:has(#room:not(.hidden)) h1 {
+    font-size: 3.5rem; 
+    margin-top: 0;
+}
+body:has(#room:not(.hidden)) .subtitle {
+    display: none; /* Escondemos el eslogan largo dentro del chat para ganar pantalla */
 }
 
 .subtitle {
@@ -157,10 +172,11 @@ button:hover {
 .room-main-layout {
     display: flex;
     gap: 20px;
-    margin: 10px 0;
+    margin-top: 10px;
+    margin-bottom: 0;
     align-items: stretch; 
-    flex: 1; /* Crucial: Absorbe el espacio vertical restante */
-    min-height: 0; /* Previene que contenidos internos expandan el layout rompiendo el viewport */
+    flex: 1; /* Absorbe de forma elástica el resto de la altura disponible */
+    min-height: 0; /* Evita que el desborde de textos rompa el contenedor */
 }
 
 /* Contenedor del Chat (Columna Izquierda) */
@@ -216,7 +232,7 @@ button:hover {
 }
 
 #sendBox {
-    border-radius: 0; /* Cuadrado */
+    border-radius: 0; /* Botón de enviar cuadrado */
 }
 
 /* ==========================================================================
@@ -224,7 +240,7 @@ button:hover {
    ========================================================================== */
 .sidebar-panel {
     flex: 1;
-    min-width: 260px;
+    min-width: 270px;
     display: flex;
     flex-direction: column;
     justify-content: space-between; 
@@ -240,7 +256,7 @@ button:hover {
     flex-grow: 1; 
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Permite que la lista interna haga scroll si hay muchos usuarios */
+    min-height: 0; /* Habilita comportamiento elástico */
 }
 
 .participants-section h3 {
