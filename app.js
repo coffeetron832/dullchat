@@ -2,6 +2,9 @@ const createRoomBtn = document.getElementById("createRoom");
 const roomSection = document.getElementById("room");
 const homeSection = document.getElementById("home");
 
+// --- NUEVO ELEMENTO PARA CONTROLAR EL LOGO/ESLOGAN ---
+const brandHeader = document.getElementById("brand-header");
+
 const roomIdEl = document.getElementById("roomId");
 const userIdEl = document.getElementById("userId");
 const roomCapacityEl = document.getElementById("roomCapacity");
@@ -158,6 +161,9 @@ function resetAppToHome() {
 
     roomSection.classList.add("hidden");
     homeSection.classList.remove("hidden");
+    
+    // Volver a mostrar el logo gótico y eslogan al regresar al inicio
+    brandHeader.classList.remove("hidden");
 
     // Limpiar parámetros de la URL
     window.history.pushState({}, document.title, window.location.pathname);
@@ -199,6 +205,8 @@ createRoomBtn.addEventListener("click", () => {
     destroyRoomBtn.textContent = "Destruir sala";
     destroyRoomBtn.classList.add("danger");
 
+    // Ocultar logo y cambiar de sección con el efecto CSS configurado
+    brandHeader.classList.add("hidden");
     homeSection.classList.add("hidden");
     roomSection.classList.remove("hidden");
 
@@ -247,8 +255,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
         // Cambiar dinámicamente el botón para el Invitado
         destroyRoomBtn.textContent = "Abandonar sala";
-        destroyRoomBtn.classList.remove("danger"); // Opcional: quitar estilo rojo si prefieres
+        destroyRoomBtn.classList.remove("danger"); 
 
+        // Ocultar logo y cambiar de sección al entrar directo por link
+        brandHeader.classList.add("hidden");
         homeSection.classList.add("hidden");
         roomSection.classList.remove("hidden");
 
