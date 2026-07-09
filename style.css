@@ -511,6 +511,10 @@ button:hover {
         font-size: 16px !important; 
     }
 
+   #emojiBtn, #emojiPickerWrapper {
+        display: none !important;
+    }
+   
     /* El panel lateral pasa abajo y se vuelve compacto */
     .sidebar-panel {
         max-width: 100%;
