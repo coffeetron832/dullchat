@@ -3,22 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DullChat</title>
+<title>dullchat</title>
+
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div class="container">
 
-    <h1>DullChat</h1>
+    <h1>dullchat</h1>
 
     <p class="subtitle">
         Conversaciones privadas y temporales.
     </p>
 
+    <!-- Pantalla inicial -->
     <div id="home">
 
-        <label for="capacity">Capacidad máxima</label>
+        <label for="capacity">
+            Capacidad máxima
+        </label>
 
         <select id="capacity">
             <option value="5">5</option>
@@ -33,20 +37,48 @@
 
     </div>
 
+    <!-- Sala -->
     <div id="room" class="hidden">
 
-        <h2>Sala creada</h2>
+        <h2>DullChat</h2>
 
         <div class="info">
-            <p><strong>Sala:</strong> <span id="roomId"></span></p>
-            <p><strong>Tu ID:</strong> <span id="userId"></span></p>
-            <p><strong>Rol:</strong> Anfitrión</p>
-            <p><strong>Capacidad:</strong> <span id="roomCapacity"></span></p>
+
+            <p>
+                <strong>Sala:</strong>
+                <span id="roomId">-</span>
+            </p>
+
+            <p>
+                <strong>Tu ID:</strong>
+                <span id="userId">-</span>
+            </p>
+
+            <p>
+                <strong>Rol:</strong>
+                <span id="role">-</span>
+            </p>
+
+            <p>
+                <strong>Capacidad:</strong>
+                <span id="roomCapacity">-</span>
+            </p>
+
+            <p>
+                <strong>Conectados:</strong>
+                <span id="connectedCount">1</span>
+            </p>
+
         </div>
 
+        <hr>
+
+        <!-- Compartir sala -->
         <div class="share-box">
 
-            <label>Enlace para compartir</label>
+            <label>
+                Enlace para compartir
+            </label>
 
             <input
                 type="text"
@@ -62,17 +94,66 @@
 
         <hr>
 
-        <div class="chat-placeholder">
+        <!-- Participantes -->
+        <div class="participants">
 
-            <p>
-                El sistema de mensajes se añadirá en la siguiente versión.
+            <h3>Participantes</h3>
+
+            <ul id="participantsList">
+                <li>Cargando...</li>
+            </ul>
+
+        </div>
+
+        <hr>
+
+        <!-- Mensajes -->
+        <div class="chat-container">
+
+            <div id="messages">
+
+                <div class="system-message">
+                    Bienvenido a DullChat.
+                </div>
+
+            </div>
+
+            <div class="message-box">
+
+                <input
+                    type="text"
+                    id="messageInput"
+                    placeholder="Escribe un mensaje..."
+                    maxlength="1000"
+                    autocomplete="off"
+                >
+
+                <button id="sendMessage">
+                    Enviar
+                </button>
+
+            </div>
+
+        </div>
+
+        <hr>
+
+        <!-- Estado -->
+        <div class="status">
+
+            <p id="connectionStatus">
+                Desconectado
             </p>
 
         </div>
 
         <hr>
 
-        <button id="destroyRoom" class="danger">
+        <!-- Solo anfitrión -->
+        <button
+            id="destroyRoom"
+            class="danger"
+        >
             Destruir sala
         </button>
 
@@ -80,6 +161,11 @@
 
 </div>
 
+<!-- PeerJS -->
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+<!-- Aplicación -->
 <script src="app.js"></script>
+
 </body>
 </html>
