@@ -153,6 +153,7 @@ function generateUserId() {
     return `d${number}`;
 }
 
+// --- FUNCIÓN PARA GENERAR ID DE SALA UNIFORME ---
 function generateRoomId() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let first = "";
@@ -188,7 +189,7 @@ function updateParticipantsUI() {
     connectedCountEl.textContent = connections.length + 1;
 }
 
-// --- FUNCIÓN PARA INICIALIZAR PEERJS ---
+// --- FUNCIÓN PARA INICIALIZAR PEERJS (CON RECONEXIÓN AUTOMÁTICA COHERENTE) ---
 function initPeer(userId, isHost, targetRoomId = null) {
     peer = new Peer(userId, {
         debug: 1 
@@ -206,30 +207,44 @@ function initPeer(userId, isHost, targetRoomId = null) {
         setupConnectionTrack(conn);
     });
 
+    // Intentar reconectar si se pierde el enlace con el servidor de señalización
+    peer.on('disconnected', () => {
+        console.log('Conexión parpadeante con la señalización. Intentando recuperar la sesión...');
+        if (isRoomActive && !peer.destroyed) {
+            peer.reconnect();
+        }
+    });
+
     peer.on('error', (err) => {
-        console.error('Error en PeerJS:', err);
+        console.error('Error detectado en PeerJS:', err.type, err);
         
+        // SALVAVIDAS CONTRA MICRO-CORTES: Si parpadea la red, damos margen de recuperación
+        if (err.type === 'network' || err.type === 'disconnect') {
+            console.log('Detectada inestabilidad de red. Esperando estabilización...');
+            setTimeout(() => {
+                if (peer && peer.disconnected && !peer.destroyed && isRoomActive) {
+                    peer.reconnect();
+                }
+            }, 3000); // 3 segundos de tolerancia pasiva
+            return; // Detiene la propagación para evitar la expulsión inmediata
+        }
+        
+        // Si el error es insalvable, procedemos al cierre seguro de la sala
         isRoomActive = false;
         if (peer) peer.destroy();
         
-        // Retornar a la página de inicio limpiando rastros visuales
         resetAppToHome();
 
-        // Traducción de errores técnicos a lenguaje amigable
+        // Mapeo amigable de errores técnicos
         switch (err.type) {
             case 'peer-not-found':
             case 'peer-unavailable':
-                // SONIDO: Sala caída o no existente
                 playBitSound("error");
                 alert("La sala a la que intentas acceder ya no existe, está llena o el enlace es inválido.");
                 break;
-            case 'network':
-                playBitSound("error");
-                alert("Hubo un problema con tu conexión a internet. Por favor, verifica tu red.");
-                break;
             case 'disconnected':
                 playBitSound("error");
-                alert("Te has desconectado del servidor de emparejamiento. Volviendo al menú principal.");
+                alert("Te has desconectado del servidor de emparejamiento de forma permanente.");
                 break;
             case 'browser-incompatible':
                 playBitSound("error");
@@ -237,7 +252,7 @@ function initPeer(userId, isHost, targetRoomId = null) {
                 break;
             default:
                 playBitSound("error");
-                alert("No se pudo establecer la conexión con la sala en este momento.");
+                alert("No se pudo mantener la infraestructura de conexión estable con la sala.");
                 break;
         }
     });
@@ -272,7 +287,6 @@ function setupConnectionTrack(conn) {
     // Escuchar datos recibidos (Procesamiento asíncrono para descifrar)
     conn.on('data', async (data) => {
         if (data.type === "ROOM_DESTROYED") {
-            // SONIDO: La sala en la que estabas fue destruida por el Host
             playBitSound("error");
             handleRoomDestructionByHost("El anfitrión ha cerrado esta sala. Redirigiendo al inicio...");
             return;
@@ -433,7 +447,7 @@ window.addEventListener("DOMContentLoaded", () => {
         roomIdEl.textContent = roomParam;
         userIdEl.textContent = myUserId;
         roomCapacityEl.textContent = "N/A"; 
-        roleEl.textContent = "Invitado";    
+        roleEl.textContent = "Invitado";     
         shareLinkEl.value = window.location.href;
 
         destroyRoomBtn.textContent = "Abandonar sala";
