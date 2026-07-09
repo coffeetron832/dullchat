@@ -27,6 +27,81 @@ let peer = null;
 let connections = []; // Guardará las conexiones activas con otros peers
 let isRoomActive = true; // Controla si la sala sigue vigente
 
+// --- CONFIGURACIÓN CRIPTOGRÁFICA (E2EE) ---
+const CRYPTO_SALT = new TextEncoder().encode("DullChatSalt2026");
+let cryptoKey = null; // Guardará la clave simétrica generada en tiempo de ejecución
+
+// Derivar una clave AES-GCM a partir del roomId usando PBKDF2
+async function deriveKeyFromRoomId(roomId) {
+    const encoder = new TextEncoder();
+    const baseKey = await window.crypto.subtle.importKey(
+        "raw",
+        encoder.encode(roomId),
+        { name: "PBKDF2" },
+        false,
+        ["deriveKey"]
+    );
+
+    cryptoKey = await window.crypto.subtle.deriveKey(
+        {
+            name: "PBKDF2",
+            salt: CRYPTO_SALT,
+            iterations: 100000,
+            hash: "SHA-256"
+        },
+        baseKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+    );
+}
+
+// Cifrar texto plano
+async function encryptMessage(plainText) {
+    if (!cryptoKey) return plainText;
+    const encoder = new TextEncoder();
+    const iv = window.crypto.getRandomValues(new Uint8Array(12)); // IV único de 12 bytes para AES-GCM
+    
+    const encryptedBuffer = await window.crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        cryptoKey,
+        encoder.encode(plainText)
+    );
+
+    // Unimos el IV y el buffer cifrado en un solo Array para transmitirlo empaquetado en Base64
+    const combinedArray = new Uint8Array(iv.length + encryptedBuffer.byteLength);
+    combinedArray.set(iv, 0);
+    combinedArray.set(new Uint8Array(encryptedBuffer), iv.length);
+
+    return btoa(String.fromCharCode.apply(null, combinedArray));
+}
+
+// Descifrar texto codificado en Base64
+async function decryptMessage(base64Data) {
+    if (!cryptoKey) return base64Data;
+    try {
+        const binaryString = atob(base64Data);
+        const combinedArray = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            combinedArray[i] = binaryString.charCodeAt(i);
+        }
+
+        const iv = combinedArray.slice(0, 12);
+        const encryptedData = combinedArray.slice(12);
+
+        const decryptedBuffer = await window.crypto.subtle.decrypt(
+            { name: "AES-GCM", iv: iv },
+            cryptoKey,
+            encryptedData
+        );
+
+        return new TextDecoder().decode(decryptedBuffer);
+    } catch (err) {
+        console.error("Error al descifrar el mensaje:", err);
+        return "[Error: No se pudo descifrar este mensaje. Clave inválida o corrupta]";
+    }
+}
+
 function generateUserId() {
     const number = Math.floor(1000 + Math.random() * 9000);
     return `d${number}`;
@@ -139,16 +214,19 @@ function setupConnectionTrack(conn) {
         appendMessage("Sistema", `Usuario ${conn.peer} se ha unido.`, "system");
     });
 
-    // Escuchar datos recibidos
-    conn.on('data', (data) => {
+    // Escuchar datos recibidos (Procesamiento asíncrono para descifrar)
+    conn.on('data', async (data) => {
         if (data.type === "ROOM_DESTROYED") {
             handleRoomDestructionByHost("El anfitrión ha cerrado esta sala. Redirigiendo al inicio...");
             return;
         }
 
-        appendMessage(data.sender, data.text, "received");
+        // E2EE: Descifrar el payload antes de inyectarlo en el DOM
+        const decryptedText = await decryptMessage(data.text);
+        appendMessage(data.sender, decryptedText, "received");
         
         if (roleEl.textContent === "Anfitrión") {
+            // El host retransmite el mensaje tal y como llegó (ya cifrado) a los demás nodos
             broadcastMessage(data, conn.peer);
         }
     });
@@ -187,6 +265,7 @@ function resetAppToHome() {
     shareLinkEl.value = "";
     messagesContainer.innerHTML = ""; 
     participantsListEl.innerHTML = "<li>Cargando...</li>";
+    cryptoKey = null; // Destrucción inmediata de la clave simétrica en memoria RAM
 
     roomSection.classList.add("hidden");
     homeSection.classList.remove("hidden");
@@ -226,7 +305,7 @@ function appendMessage(sender, text, type) {
 }
 
 // --- EVENTO: CREAR SALA (HOST) ---
-createRoomBtn.addEventListener("click", () => {
+createRoomBtn.addEventListener("click", async () => {
     const capacity = document.getElementById("capacity").value;
     const roomId = generateRoomId();
     const userId = `Host-${generateUserId()}`; 
@@ -249,22 +328,28 @@ createRoomBtn.addEventListener("click", () => {
 
     isRoomActive = true;
     updateParticipantsUI();
+    
+    // E2EE: Derivar clave de forma asíncrona antes de levantar la infraestructura de red PeerJS
+    await deriveKeyFromRoomId(roomId);
     initPeer(roomId, true);
 });
 
 // --- ENVIAR MENSAJE (CLICK) ---
-sendBox.addEventListener("click", () => {
+sendBox.addEventListener("click", async () => {
     if (!isRoomActive) return;
 
     const text = messageInput.value.trim();
     if (!text) return;
 
+    // E2EE: Cifrar el texto plano usando la clave simétrica derivada
+    const encryptedText = await encryptMessage(text);
+
     const messageObj = {
         sender: userIdEl.textContent,
-        text: text
+        text: encryptedText
     };
 
-    appendMessage("Tú", text, "sent");
+    appendMessage("Tú", text, "sent"); // Render local en texto plano seguro
     broadcastMessage(messageObj);
     messageInput.value = "";
 });
@@ -295,7 +380,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
         isRoomActive = true;
         updateParticipantsUI();
-        initPeer(myUserId, false, roomParam);
+        
+        // E2EE: Derivar clave con el id extraído de la URL e inicializar la red
+        deriveKeyFromRoomId(roomParam).then(() => {
+            initPeer(myUserId, false, roomParam);
+        });
     }
 });
 
