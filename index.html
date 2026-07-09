@@ -119,35 +119,42 @@
     
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
-    <script type="module">
-        import { Picker } from 'https://cdn.jsdelivr.net/npm/emoji-mart@5.6.0/dist/index.js'
-        
-        const picker = new Picker({ 
-            data: async () => {
-                const response = await fetch('https://cdn.jsdelivr.net/npm/@emoji-mart/data')
-                return response.json()
-            },
-            onEmojiSelect: (emoji) => {
+    <script src="https://cdn.jsdelivr.net/npm/picmo@5.8.5/dist/umd/index.js"></script>
+    <script>
+        let picker;
+
+        try {
+            // Inicializamos el picker usando el objeto global de Picmo
+            picker = picmo.createPicker({
+                rootElement: document.body,
+                theme: 'light' // Se acopla perfecto a tu diseño limpio
+            });
+
+            // Le asignamos el ID para poder controlarlo con tu CSS actual
+            picker.id = 'emojiPickerContainer';
+            picker.classList.add('hidden');
+
+            // Al seleccionar un emoji, lo inserta en tu input
+            picker.addEventListener('emoji:select', (selection) => {
                 const input = document.getElementById('messageInput');
-                input.value += emoji.native;
+                input.value += selection.emoji;
                 input.focus();
+            });
+        } catch (error) {
+            console.error("Error al cargar Picmo:", error);
+        }
+
+        // Manejo del evento click en tu botón 😊 para mostrar/ocultar
+        document.getElementById('emojiBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (picker) {
+                picker.classList.toggle('hidden');
             }
         });
 
-        // Lo inyectamos en el DOM e iniciamos oculto
-        document.body.appendChild(picker);
-        picker.classList.add('hidden');
-        picker.id = 'emojiPickerContainer';
-        
-        // Manejo del evento click para mostrar/ocultar el panel
-        document.getElementById('emojiBtn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            picker.classList.toggle('hidden');
-        });
-
-        // Ocultar el picker si se hace clic fuera de él
+        // Ocultar el picker si se hace clic en cualquier otra parte de la pantalla
         document.addEventListener('click', (e) => {
-            if (!picker.contains(e.target) && e.target.id !== 'emojiBtn') {
+            if (picker && !picker.contains(e.target) && e.target.id !== 'emojiBtn') {
                 picker.classList.add('hidden');
             }
         });
