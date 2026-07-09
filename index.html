@@ -41,13 +41,15 @@
 
                 <div class="room-main-layout">
                     
-                    <div class="chat-container">
+                    <div class="chat-container" style="position: relative;">
 
                         <div id="messages">
                             <div class="message system">
                                 <strong>Sistema:</strong> Bienvenido a DullChat.
                             </div>
                         </div>
+
+                        <div id="emojiPickerWrapper" style="position: absolute; bottom: 50px; left: 0; z-index: 1000; display: none;"></div>
 
                         <div class="message-box">
                             <button id="emojiBtn" type="button" title="Insertar emoji">😊</button>
@@ -121,18 +123,15 @@
 
     <script src="https://cdn.jsdelivr.net/npm/picmo@5.8.5/dist/umd/index.js"></script>
     <script>
+        const wrapper = document.getElementById('emojiPickerWrapper');
         let picker;
 
         try {
-            // Inicializamos el picker usando el objeto global de Picmo
+            // Renderizamos Picmo directamente en nuestro contenedor controlado
             picker = picmo.createPicker({
-                rootElement: document.body,
-                theme: 'light' // Se acopla perfecto a tu diseño limpio
+                rootElement: wrapper,
+                theme: 'light'
             });
-
-            // Le asignamos el ID para poder controlarlo con tu CSS actual
-            picker.id = 'emojiPickerContainer';
-            picker.classList.add('hidden');
 
             // Al seleccionar un emoji, lo inserta en tu input
             picker.addEventListener('emoji:select', (selection) => {
@@ -144,18 +143,22 @@
             console.error("Error al cargar Picmo:", error);
         }
 
-        // Manejo del evento click en tu botón 😊 para mostrar/ocultar
+        // Manejo del evento click en tu botón 😊 para mostrar/ocultar de forma nativa
         document.getElementById('emojiBtn').addEventListener('click', (e) => {
             e.stopPropagation();
-            if (picker) {
-                picker.classList.toggle('hidden');
+            if (wrapper) {
+                if (wrapper.style.display === 'none') {
+                    wrapper.style.display = 'block';
+                } else {
+                    wrapper.style.display = 'none';
+                }
             }
         });
 
-        // Ocultar el picker si se hace clic en cualquier otra parte de la pantalla
+        // Ocultar el picker si se hace clic en cualquier otra parte de la pantalla externa
         document.addEventListener('click', (e) => {
-            if (picker && !picker.contains(e.target) && e.target.id !== 'emojiBtn') {
-                picker.classList.add('hidden');
+            if (wrapper && !wrapper.contains(e.target) && e.target.id !== 'emojiBtn') {
+                wrapper.style.display = 'none';
             }
         });
     </script>
