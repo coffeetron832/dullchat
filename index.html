@@ -39,90 +39,38 @@
 
         <h2>DullChat</h2>
 
-        <div class="info">
+        <div class="room-main-layout">
+            
+            <div class="chat-container">
 
-            <p>
-                <strong>Sala:</strong>
-                <span id="roomId">-</span>
-            </p>
-
-            <p>
-                <strong>Tu ID:</strong>
-                <span id="userId">-</span>
-            </p>
-
-            <p>
-                <strong>Rol:</strong>
-                <span id="role">-</span>
-            </p>
-
-            <p>
-                <strong>Capacidad:</strong>
-                <span id="roomCapacity">-</span>
-            </p>
-
-            <p>
-                <strong>Conectados:</strong>
-                <span id="connectedCount">1</span>
-            </p>
-
-        </div>
-
-        <hr>
-
-        <div class="share-box">
-
-            <label for="shareLink">
-                Enlace para compartir
-            </label>
-
-            <input
-                type="text"
-                id="shareLink"
-                readonly
-            >
-
-            <button id="copyLink">
-                Copiar enlace
-            </button>
-
-        </div>
-
-        <hr>
-
-        <div class="participants">
-
-            <h3>Participantes</h3>
-
-            <ul id="participantsList">
-                <li>Cargando...</li>
-            </ul>
-
-        </div>
-
-        <hr>
-
-        <div class="chat-container">
-
-            <div id="messages">
-                <div class="message system">
-                    <strong>Sistema:</strong> Bienvenido a DullChat.
+                <div id="messages">
+                    <div class="message system">
+                        <strong>Sistema:</strong> Bienvenido a DullChat.
+                    </div>
                 </div>
+
+                <div class="message-box">
+                    <input
+                        type="text"
+                        id="messageInput"
+                        placeholder="Escribe un mensaje..."
+                        maxlength="1000"
+                        autocomplete="off"
+                    >
+                    <button id="sendBox">
+                        Enviar
+                    </button>
+                </div>
+
             </div>
 
-            <div class="message-box">
+            <div class="participants">
 
-                <input
-                    type="text"
-                    id="messageInput"
-                    placeholder="Escribe un mensaje..."
-                    maxlength="1000"
-                    autocomplete="off"
-                >
+                <h3>Participantes</h3>
 
-                <button id="sendBox">
-                    Enviar
-                </button>
+                <ul id="participantsList">
+                    <li>Cargando...</li>
+                </ul>
 
             </div>
 
@@ -130,20 +78,31 @@
 
         <hr>
 
-        <div class="status">
+        <div class="room-footer-layout">
 
-            <p id="connectionStatus">
-                Conectado a la red P2P
-            </p>
+            <div class="info">
+                <p><strong>Sala:</strong> <span id="roomId">-</span></p>
+                <p><strong>Tu ID:</strong> <span id="userId">-</span></p>
+                <p><strong>Rol:</strong> <span id="role">-</span></p>
+                <p><strong>Capacidad:</strong> <span id="roomCapacity">-</span></p>
+                <p><strong>Conectados:</strong> <span id="connectedCount">1</span></p>
+            </div>
+
+            <div class="share-box">
+                <label for="shareLink">Enlace para compartir</label>
+                <input type="text" id="shareLink" readonly>
+                <button id="copyLink">Copiar enlace</button>
+            </div>
+
+            <div class="status">
+                <p id="connectionStatus">Conectado a la red P2P</p>
+            </div>
 
         </div>
 
         <hr>
 
-        <button
-            id="destroyRoom"
-            class="danger"
-        >
+        <button id="destroyRoom" class="danger">
             Destruir sala
         </button>
 
@@ -152,7 +111,6 @@
 </div>
 
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-
 <script src="app.js"></script>
 
 </body>
