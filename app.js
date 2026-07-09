@@ -48,11 +48,18 @@ function updateParticipantsUI() {
     participantsListEl.innerHTML = "";
 
     const myLi = document.createElement("li");
-    myLi.innerHTML = `<strong>${userIdEl.textContent}</strong> (Tú)`;
+    
+    // CORRECCIÓN XSS: El nombre se inyecta como texto seguro usando un nodo de texto plano
+    const strongEl = document.createElement("strong");
+    strongEl.textContent = userIdEl.textContent;
+    myLi.appendChild(strongEl);
+    myLi.appendChild(document.createTextNode(" (Tú)"));
+    
     participantsListEl.appendChild(myLi);
 
     connections.forEach(conn => {
         const li = document.createElement("li");
+        // CORRECCIÓN XSS: Cambiado innerHTML por textContent
         li.textContent = conn.peer;
         participantsListEl.appendChild(li);
     });
@@ -203,7 +210,17 @@ function broadcastMessage(messageObj, skipPeerId = null) {
 function appendMessage(sender, text, type) {
     const msgDiv = document.createElement("div");
     msgDiv.classList.add("message", type); 
-    msgDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    
+    // CORRECCIÓN CRÍTICA XSS: Reemplazado innerHTML por manipulación nativa segura
+    const senderStrong = document.createElement("strong");
+    senderStrong.textContent = `${sender}:`; // Trata el nombre como texto plano
+    
+    const textSpan = document.createElement("span");
+    textSpan.textContent = ` ${text}`; // Trata el mensaje estrictamente como texto plano
+
+    msgDiv.appendChild(senderStrong);
+    msgDiv.appendChild(textSpan);
+    
     messagesContainer.appendChild(msgDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight; 
 }
