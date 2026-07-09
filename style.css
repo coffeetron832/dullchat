@@ -205,11 +205,12 @@ button:hover {
 .message {
     margin-bottom: 8px;
     word-break: break-word;
+    font-size: 15px;
 }
 .message.system {
     color: #777;
     font-style: italic;
-    font-size: 13px;
+    font-size: 14px;
 }
 .message.sent {
     color: #222;
