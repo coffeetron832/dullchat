@@ -24,10 +24,10 @@ body {
     background: #fff;
     line-height: 1.5;
     
-    /* Flexbox vertical para forzar el Sticky Footer */
+    /* Flexbox vertical principal */
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh; /* Fuerza al body a medir exactamente la ventana */
     box-sizing: border-box;
 }
 
@@ -40,6 +40,7 @@ body {
     padding: 20px;
     box-sizing: border-box;
     width: 100%;
+    overflow: hidden; /* Evita scrolls dobles extraños */
 }
 
 /* El contenedor principal se ajusta pero no toma toda la pantalla en Home */
@@ -57,14 +58,14 @@ body {
 }
 
 /* ==========================================================================
-   ESTRUCTURA DE EXPANSIÓN VERTICAL CUANDO LA SALA ESTÁ ACTIVA
+   CASCADA CRÍTICA: FORZAR ALTURA CUANDO LA SALA ESTÁ ACTIVA
    ========================================================================== */
 body:has(#room:not(.hidden)) .main-wrapper {
-    align-items: stretch; /* Estira el contenido verticalmente para aprovechar la pantalla */
+    align-items: stretch; /* Obliga al contenedor a estirarse de arriba a abajo */
 }
 
 body:has(#room:not(.hidden)) .container {
-    height: 100%;
+    height: 100%; /* Toma el 100% del wrapper estirado */
     display: flex;
     flex-direction: column;
 }
@@ -72,7 +73,8 @@ body:has(#room:not(.hidden)) .container {
 body:has(#room:not(.hidden)) #room {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    flex: 1; /* Ocupa todo el alto disponible dentro de .container */
+    height: 100%;
 }
 
 /* Encabezado que contiene el logo gótico y el eslogan en el inicio */
@@ -156,8 +158,9 @@ button:hover {
     display: flex;
     gap: 20px;
     margin: 10px 0;
-    align-items: stretch; /* Mantiene ambas columnas con la misma altura */
-    flex: 1; /* Permite al layout heredar y expandirse en toda la altura disponible */
+    align-items: stretch; 
+    flex: 1; /* Crucial: Absorbe el espacio vertical restante */
+    min-height: 0; /* Previene que contenidos internos expandan el layout rompiendo el viewport */
 }
 
 /* Contenedor del Chat (Columna Izquierda) */
@@ -166,21 +169,20 @@ button:hover {
     display: flex;
     flex-direction: column;
     border: 1px solid #ddd;
-    border-radius: 0; /* CORRECCIÓN: Totalmente cuadrado */
+    border-radius: 0; /* Totalmente cuadrado */
     padding: 15px;
     background: #fdfdfd;
-    min-height: 480px;
 }
 
 /* Área interna donde se acumulan los mensajes */
 #messages {
-    flex-grow: 1; /* Hace que el recuadro de mensajes use todo el alto disponible */
+    flex-grow: 1; 
     overflow-y: auto;
     border: 1px solid #eee;
     background: #fff;
     padding: 10px;
     margin-bottom: 12px;
-    border-radius: 0; /* CORRECCIÓN: Totalmente cuadrado */
+    border-radius: 0; /* Totalmente cuadrado */
 }
 
 /* Estilos para los diferentes tipos de mensajes */
@@ -209,12 +211,12 @@ button:hover {
 #messageInput {
     flex: 1;
     border: 1px solid #ccc;
-    border-radius: 0; /* CORRECCIÓN: Totalmente cuadrado */
+    border-radius: 0; /* Totalmente cuadrado */
     padding: 8px;
 }
 
 #sendBox {
-    border-radius: 0; /* Opcional: Hace juego con la caja de texto cuadrada */
+    border-radius: 0; /* Cuadrado */
 }
 
 /* ==========================================================================
@@ -225,7 +227,7 @@ button:hover {
     min-width: 260px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Divide verticalmente los componentes */
+    justify-content: space-between; 
     gap: 15px;
 }
 
@@ -235,9 +237,10 @@ button:hover {
     border-radius: 6px;
     padding: 15px;
     background: #f9f9f9;
-    flex-grow: 1; /* Toma el espacio estirable superior */
+    flex-grow: 1; 
     display: flex;
     flex-direction: column;
+    min-height: 0; /* Permite que la lista interna haga scroll si hay muchos usuarios */
 }
 
 .participants-section h3 {
@@ -253,7 +256,7 @@ button:hover {
     padding: 0;
     margin: 0;
     overflow-y: auto;
-    max-height: 200px;
+    flex: 1;
 }
 
 #participantsList li {
@@ -305,7 +308,7 @@ button:hover {
     background: #fff;
     color: #b00000;
     border: 1px solid #b00000;
-    width: 100%; /* El botón ahora cubre la base del bloque de control */
+    width: 100%; 
     padding: 8px;
     border-radius: 4px;
 }
