@@ -1,10 +1,16 @@
-/* Importar la fuente UnifrakturMaguntia */
+/* Importar la fuente UnifrakturMaguntia desde Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap');
 
-/* Animación de entrada */
+/* Animación sutil de barrido y desvanecimiento hacia arriba */
 @keyframes fadeSweep {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 html, body {
@@ -17,6 +23,8 @@ body {
     color: #222;
     background: #fff;
     line-height: 1.5;
+    
+    /* Flexbox para centrar dinámicamente el contenedor en la ventana */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -24,14 +32,20 @@ body {
     box-sizing: border-box;
 }
 
-/* El contenedor principal crece automáticamente en modo sala */
+/* El contenedor principal cambia de tamaño según el estado de la app */
 .container {
-    width: 95%;
-    max-width: 1000px;
+    width: 100%;
+    max-width: 680px; /* Tamaño ideal y compacto para el Home */
     margin: auto;
-    transition: max-width 0.3s ease;
+    transition: max-width 0.3s ease-in-out;
 }
 
+/* CORRECCIÓN: Cuando la sala NO está oculta, expandimos el contenedor para aprovechar la pantalla */
+.container:has(#room:not(.hidden)) {
+    max-width: 1100px;
+}
+
+/* Encabezado que contiene el logo gótico y el eslogan en el inicio */
 #brand-header {
     text-align: center;
     margin-bottom: 20px;
@@ -40,9 +54,13 @@ body {
 h1 {
     margin-bottom: 0;
     color: #551A8B;
+    
+    /* Aplicar la fuente gótica */
     font-family: 'UnifrakturMaguntia', cursive;
-    font-size: 7.5rem;
+    font-size: 7.5rem; 
     letter-spacing: 1px;
+    
+    /* Borde negro puro, súper definido y delgado */
     -webkit-text-stroke: 1px #000000;
 }
 
@@ -51,22 +69,41 @@ h1 {
     color: #555;
     margin-bottom: 30px;
     font-size: 1.1rem;
-    max-width: 500px;
+    max-width: 520px;
     margin-left: auto;
     margin-right: auto;
 }
 
+/* Vista de la Sala con animación activa al quitar el .hidden */
 #room:not(.hidden) {
     animation: fadeSweep 0.4s ease-out forwards;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
-#home { text-align: center; }
+/* Vista de Home centrada internamente */
+#home {
+    text-align: center;
+}
 
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}
 
-/* Controles generales */
-label { display: block; margin-bottom: 10px; font-weight: bold; }
-select, button, input { font-size: 14px; padding: 6px; box-sizing: border-box; }
+label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+select,
+button,
+input {
+    font-size: 14px;
+    padding: 6px;
+    box-sizing: border-box;
+}
 
 button {
     cursor: pointer;
@@ -78,21 +115,25 @@ button {
     transition: background 0.2s;
 }
 
-button:hover { background: #40126b; }
-#createRoom { margin-left: 10px; }
+button:hover {
+    background: #40126b;
+}
+
+#createRoom {
+    margin-left: 10px;
+}
 
 /* ==========================================================================
-   LAYOUT DE LA SALA (Expandido)
+   MAIN LAYOUT (Chat a la izquierda, Participantes a la derecha)
    ========================================================================== */
 .room-main-layout {
     display: flex;
     gap: 20px;
     margin: 20px 0;
     align-items: stretch;
-    min-height: 500px;
 }
 
-/* Columna Izquierda: Chat que crece */
+/* Contenedor del Chat (Columna Izquierda) */
 .chat-container {
     flex: 3;
     display: flex;
@@ -101,11 +142,15 @@ button:hover { background: #40126b; }
     border-radius: 6px;
     padding: 15px;
     background: #fdfdfd;
+    
+    /* CORRECCIÓN: Ajuste alto adaptativo basado en el viewport */
+    height: calc(100vh - 280px); 
+    min-height: 400px;
 }
 
+/* Área interna donde se acumulan los mensajes */
 #messages {
-    flex-grow: 1; /* Ocupa el espacio vertical disponible */
-    min-height: 400px;
+    flex: 1; /* CORRECCIÓN: Absorbe todo el espacio vertical de la caja de chat */
     overflow-y: auto;
     border: 1px solid #eee;
     background: #fff;
@@ -114,40 +159,136 @@ button:hover { background: #40126b; }
     border-radius: 4px;
 }
 
-.message { margin-bottom: 8px; word-break: break-word; }
-.message.system { color: #777; font-style: italic; font-size: 13px; }
-.message.received { color: #551A8B; }
+/* Estilos para los diferentes tipos de mensajes */
+.message {
+    margin-bottom: 8px;
+    word-break: break-word;
+}
+.message.system {
+    color: #777;
+    font-style: italic;
+    font-size: 13px;
+}
+.message.sent {
+    color: #222;
+}
+.message.received {
+    color: #551A8B;
+}
 
-.message-box { display: flex; gap: 8px; }
-#messageInput { flex: 1; border: 1px solid #ccc; border-radius: 4px; }
+/* Barra inferior del chat (Input + Botón Enviar) */
+.message-box {
+    display: flex;
+    gap: 8px;
+}
 
-/* Columna Derecha: Participantes */
+#messageInput {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+}
+
+/* Contenedor de Participantes (Columna Derecha) */
 .participants {
     flex: 1;
-    min-width: 180px;
+    min-width: 200px;
     border: 1px solid #ddd;
     border-radius: 6px;
     padding: 15px;
     background: #f9f9f9;
     display: flex;
     flex-direction: column;
+    height: calc(100vh - 280px);
+    min-height: 400px;
+    box-sizing: border-box;
 }
 
-.participants h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-#participantsList { list-style: none; padding: 0; margin: 0; overflow-y: auto; flex-grow: 1; }
-#participantsList li { padding: 4px 0; font-size: 13px; border-bottom: 1px dotted #eee; }
+.participants h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 16px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+#participantsList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto;
+    flex: 1; /* CORRECCIÓN: Permite scroll interno si hay demasiados usuarios */
+}
+
+#participantsList li {
+    padding: 6px 0;
+    font-size: 13px;
+    border-bottom: 1px dotted #eee;
+}
 
 /* ==========================================================================
-   FOOTER Y UTILIDADES
+   FOOTER LAYOUT (Información de la sala abajo)
    ========================================================================== */
-.room-footer-layout { background: #f7f7f7; padding: 15px; border-radius: 6px; border: 1px solid #eee; }
-.info { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 15px; }
-.info p { margin: 0; font-size: 14px; }
+.room-footer-layout {
+    background: #f7f7f7;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #eee;
+}
 
-.share-box { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
-#shareLink { width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 5px; }
+/* Datos de la sala alineados en fila horizontal */
+.info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 15px;
+}
 
-.danger { background: #fff; color: #b00000; border: 1px solid #b00000; }
-.danger:hover { background: #b00000; color: #fff; }
+.info p {
+    margin: 0;
+    font-size: 14px;
+}
 
-hr { border: none; border-top: 1px solid #ddd; margin: 20px 0; }
+/* Caja para compartir el enlace */
+.share-box {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+#shareLink {
+    width: 100%;
+    margin-bottom: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    padding: 8px;
+}
+
+/* Estado de la conexión P2P */
+.status p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+/* ==========================================================================
+   UTILIDADES Y BOTONES ESPECIALES
+   ========================================================================== */
+.danger {
+    background: #fff;
+    color: #b00000;
+    border: 1px solid #b00000;
+}
+
+.danger:hover {
+    background: #b00000;
+    color: #fff;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 20px 0;
+}
