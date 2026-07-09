@@ -403,3 +403,27 @@ button:hover {
     border-radius: 0; 
     padding: 6px 10px;
 }
+
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: #666; /* Color base */
+}
+
+/* Colores para las barras de señal */
+.signal-online { color: #2ecc71; }      /* Verde */
+.signal-connecting { color: #f1c40f; }  /* Amarillo */
+.signal-offline { color: #e74c3c; }     /* Rojo */
+
+/* Animación de pulso para la señal inestable */
+.signal-connecting {
+    animation: pulseSignal 1s infinite alternate;
+}
+
+@keyframes pulseSignal {
+    from { opacity: 0.3; }
+    to { opacity: 1; }
+}
