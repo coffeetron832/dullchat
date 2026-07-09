@@ -1,7 +1,8 @@
-/* Importar la fuente UnifrakturMaguntia desde Google Fonts */
+/* ==========================================================================
+   FUENTES Y ANIMACIONES GLOBALES
+   ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap');
 
-/* Animación sutil de barrido y desvanecimiento hacia arriba */
 @keyframes fadeSweep {
     from {
         opacity: 0;
@@ -13,6 +14,14 @@
     }
 }
 
+@keyframes pulseSignal {
+    from { opacity: 0.3; }
+    to { opacity: 1; }
+}
+
+/* ==========================================================================
+   ESTRUCTURA BASE Y CONTROL DE PANTALLA COMPLETA
+   ========================================================================== */
 html, body {
     height: 100%;
     margin: 0;
@@ -23,15 +32,13 @@ body {
     color: #222;
     background: #fff;
     line-height: 1.2;
-    
-    /* Flexbox vertical para controlar el layout de la pantalla completa */
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     box-sizing: border-box;
 }
 
-/* Contenedor wrapper que aloja todo el contenido central */
+/* Wrapper central elástico */
 .main-wrapper {
     flex: 1;
     display: flex;
@@ -42,7 +49,7 @@ body {
     width: 100%;
 }
 
-/* El contenedor principal se ajusta pero no toma toda la pantalla en Home */
+/* Ajustes adaptativos del contenedor principal */
 .container {
     width: 100%;
     max-width: 760px; 
@@ -50,7 +57,7 @@ body {
     transition: max-width 0.3s ease;
 }
 
-/* Si la sala está visible, expande el contenedor horizontalmente de forma controlada */
+/* Expansión del ancho si la sala está activa */
 #room:not(.hidden) ~ .container,
 .container:has(#room:not(.hidden)) {
     max-width: 1050px;
@@ -60,13 +67,13 @@ body {
    SOLUCIÓN DE EXPANSIÓN VERTICAL ESTRICTA (Sala Activa)
    ========================================================================== */
 body:has(#room:not(.hidden)) {
-    height: 100vh; /* Bloquea el body al alto exacto del navegador */
-    overflow: hidden; /* Evita que aparezcan barras de scroll en la ventana global */
+    height: 100vh;
+    overflow: hidden; /* Elimina scrollbars globales */
 }
 
 body:has(#room:not(.hidden)) .main-wrapper {
-    align-items: stretch; /* Estira el wrapper para ocupar todo el espacio entre el header y el footer */
-    height: calc(100vh - 41px); /* Resta dinámicamente el tamaño exacto del footer */
+    align-items: stretch;
+    height: calc(100vh - 41px); /* Ajuste dinámico restando el alto exacto del footer */
     padding: 10px 20px;
 }
 
@@ -83,7 +90,9 @@ body:has(#room:not(.hidden)) #room {
     height: 100%;
 }
 
-/* Encabezado que contiene el logo gótico y el eslogan en el inicio */
+/* ==========================================================================
+   ELEMENTOS DE IDENTIDAD (BRANDING)
+   ========================================================================== */
 #brand-header {
     text-align: center;
     margin-bottom: 20px;
@@ -92,23 +101,10 @@ body:has(#room:not(.hidden)) #room {
 h1 {
     margin-bottom: 0;
     color: #551A8B;
-    
-    /* Aplicar la fuente gótica */
     font-family: 'UnifrakturMaguntia', cursive;
     font-size: 7.5rem; 
     letter-spacing: 1px;
-    
-    /* Borde negro puro, súper definido y delgado */
     -webkit-text-stroke: 1px #000000;
-}
-
-/* Si entramos a la sala, reducimos un poco el header para que no robe tanto espacio vertical */
-body:has(#room:not(.hidden)) h1 {
-    font-size: 3.5rem; 
-    margin-top: 0;
-}
-body:has(#room:not(.hidden)) .subtitle {
-    display: none; /* Escondemos el eslogan largo dentro del chat para ganar pantalla */
 }
 
 .subtitle {
@@ -120,12 +116,23 @@ body:has(#room:not(.hidden)) .subtitle {
     margin-right: auto;
 }
 
-/* Vista de la Sala con animación activa al quitar el .hidden */
+/* Ajustes de Branding compactados dentro del chat */
+body:has(#room:not(.hidden)) h1 {
+    font-size: 3.5rem; 
+    margin-top: 0;
+}
+
+body:has(#room:not(.hidden)) .subtitle {
+    display: none; /* Oculta eslogan para priorizar espacio de conversación */
+}
+
+/* ==========================================================================
+   VISTAS Y ELEMENTOS FORMULARIOS BASE
+   ========================================================================== */
 #room:not(.hidden) {
     animation: fadeSweep 0.4s ease-out forwards;
 }
 
-/* Vista de Home centrada internamente */
 #home {
     text-align: center;
 }
@@ -167,7 +174,7 @@ button:hover {
 }
 
 /* ==========================================================================
-   MAIN LAYOUT (Chat a la izquierda, Panel unificado a la derecha)
+   MAIN LAYOUT (Chat a la izquierda, Sidebar a la derecha)
    ========================================================================== */
 .room-main-layout {
     display: flex;
@@ -175,8 +182,8 @@ button:hover {
     margin-top: 10px;
     margin-bottom: 0;
     align-items: stretch; 
-    flex: 1; /* Absorbe de forma elástica el resto de la altura disponible */
-    min-height: 0; /* Evita que el desborde de textos rompa el contenedor */
+    flex: 1;
+    min-height: 0;
 }
 
 /* Contenedor del Chat (Columna Izquierda) */
@@ -184,66 +191,70 @@ button:hover {
     flex: 2;
     display: flex;
     flex-direction: column;
-    border: none; /* CORRECCIÓN: Quitamos el borde exterior redundante */
+    border: none;
     border-radius: 0; 
-    padding: 0; /* CORRECCIÓN: Limpiamos los paddings duplicados */
-    background: transparent; /* CORRECCIÓN: Se mimetiza con el fondo de la app */
+    padding: 0;
+    background: transparent;
 }
 
-/* Área interna donde se acumulan los mensajes */
+/* Área de mensajes */
 #messages {
     flex-grow: 1; 
     overflow-y: auto;
-    border: 1px solid #ddd; /* CORRECCIÓN: Le damos un color un poco más firme */
+    border: 1px solid #ddd;
     background: #fff;
-    padding: 15px; /* Un poco más de aire interno para los mensajes */
+    padding: 15px;
     margin-bottom: 12px;
-    border-radius: 0; /* Totalmente cuadrado */
+    border-radius: 0;
 }
 
-/* Estilos para los diferentes tipos de mensajes */
+/* Tipografía de Mensajería */
 .message {
     margin-bottom: 8px;
     word-break: break-word;
     font-size: 17px;
     line-height: 1.2;
 }
+
 .message.system {
     color: #777;
     font-style: italic;
     font-size: 14px;
 }
+
 .message.sent {
     color: #222;
 }
+
 .message.received {
     color: #551A8B;
 }
 
-/* Barra inferior del chat (Input + Botón Enviar) */
+/* Barra inferior del chat */
 .message-box {
     display: flex;
     gap: 8px;
+    position: relative; /* CRÍTICO: Contexto de anclaje absoluto para Picmo */
 }
 
 #messageInput {
     flex: 1;
     border: 1px solid #ccc;
-    border-radius: 0; /* Totalmente cuadrado */
+    border-radius: 0;
     padding: 8px;
 }
 
 #sendBox {
-    border-radius: 0; /* Botón de enviar cuadrado */
+    border-radius: 0;
 }
 
 /* ==========================================================================
-   SIDEBAR PANEL (Participantes arriba, Metadatos abajo)
+   SIDEBAR PANEL (Participantes y Metadatos)
    ========================================================================== */
 .sidebar-panel {
-    flex: 1; /* Regresamos a 1 para que no sea tan dominante */
-    max-width: 320px; /* Limitamos su ancho máximo para que el chat siempre tenga espacio */
-    min-width: 250px; /* Un poco menos de ancho mínimo */
+    flex: 1;
+    max-width: 320px;
+    min-width: 250px;
     display: flex;
     flex-direction: column;
     justify-content: space-between; 
@@ -259,7 +270,7 @@ button:hover {
     flex-grow: 1; 
     display: flex;
     flex-direction: column;
-    min-height: 0; /* Habilita comportamiento elástico */
+    min-height: 0;
 }
 
 .participants-section h3 {
@@ -314,14 +325,25 @@ button:hover {
     padding: 4px 6px;
 }
 
-.status-meta p {
-    margin: 0;
-    font-size: 12px;
+/* Componente del Indicador de Red */
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
     color: #666;
 }
 
+.signal-online { color: #2ecc71; }      /* Verde */
+.signal-connecting { color: #f1c40f; }  /* Amarillo */
+.signal-offline { color: #e74c3c; }     /* Rojo */
+
+.signal-connecting {
+    animation: pulseSignal 1s infinite alternate;
+}
+
 /* ==========================================================================
-   UTILIDADES Y BOTONES ESPECIALES
+   BOTONES DE CONTROL Y COMPONENTES ADICIONALES
    ========================================================================== */
 .danger {
     background: #fff;
@@ -338,6 +360,40 @@ button:hover {
 }
 
 /* ==========================================================================
+   SELECTOR DE EMOJIS (PICMO)
+   ========================================================================== */
+#emojiPickerWrapper {
+    position: absolute !important;
+    bottom: 42px !important;
+    left: 0 !important;
+    z-index: 9999 !important; /* Capa prioritaria flotante */
+}
+
+/* Sobreescritura estricta de contenedores nativos de Picmo */
+#emojiPickerWrapper .picmo__picker,
+#emojiPickerWrapper .picker-container,
+#emojiPickerWrapper [data-picker] {
+    --picker-width: 280px !important;      /* Forzar ancho compacto */
+    --picker-height: 320px !important;     /* Forzar alto compacto */
+    width: 280px !important;               
+    height: 320px !important;              
+    background-color: #ffffff !important;  /* Opacidad sólida absoluta */
+    font-size: 13px !important;            
+    border-radius: 0 !important;           /* Estética angular retro */
+    border: 1px solid #ccc !important;     
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1) !important;
+}
+
+#emojiBtn {
+    background: #f7f7f7;
+    color: #551A8B;
+    border: 1px solid #ccc;
+    border-radius: 0; 
+    padding: 6px 10px;
+    cursor: pointer;
+}
+
+/* ==========================================================================
    FOOTER
    ========================================================================== */
 .app-footer {
@@ -347,7 +403,6 @@ button:hover {
     color: #999;
     border-top: 1px solid #eee;
     background: #fff;
-    
     display: flex;
     justify-content: center;
     align-items: center;
@@ -375,66 +430,4 @@ button:hover {
     font-size: 0.65rem;
     text-decoration: underline;
     margin-left: 4px;
-}
-
-
-/* ==========================================================================
-   AJUSTES DEL SELECTOR DE EMOJIS (PICMO) - NÍTIDO Y CON FONDO SÓLIDO
-   ========================================================================== */
-#emojiPickerWrapper {
-    position: absolute !important;
-    bottom: 42px !important;
-    left: 0 !important;
-    z-index: 9999 !important; /* Asegura que se monte POR ENCIMA de los mensajes */
-}
-
-/* Forzamos el tamaño y el fondo en el contenedor nativo de Picmo */
-#emojiPickerWrapper .picmo__picker,
-#emojiPickerWrapper .picker-container,
-#emojiPickerWrapper [data-picker] {
-    --picker-width: 280px !important;      /* Reducción de ancho estricta */
-    --picker-height: 320px !important;     /* Reducción de alto estricta */
-    width: 280px !important;               /* Atajo por si la variable falla */
-    height: 320px !important;              /* Atajo por si la variable falla */
-    background-color: #ffffff !important;  /* Fondo sólido para que NO sea transparente */
-    font-size: 13px !important;            /* Achica textos y emojis de forma nativa */
-    border-radius: 0 !important;           /* Mantiene la estética cuadrada de dullchat */
-    border: 1px solid #ccc !important;     /* Borde a juego con el diseño retro */
-    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1) !important; /* Sombra sólida estilo dullchat */
-}
-
-/* Ajuste complementario para el botón 😊 */
-#emojiBtn {
-    background: #f7f7f7;
-    color: #551A8B;
-    border: 1px solid #ccc;
-    border-radius: 0; 
-    padding: 6px 10px;
-    cursor: pointer;
-}
-
-
-
-
-.status-indicator {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9rem;
-    color: #666; /* Color base */
-}
-
-/* Colores para las barras de señal */
-.signal-online { color: #2ecc71; }      /* Verde */
-.signal-connecting { color: #f1c40f; }  /* Amarillo */
-.signal-offline { color: #e74c3c; }     /* Rojo */
-
-/* Animación de pulso para la señal inestable */
-.signal-connecting {
-    animation: pulseSignal 1s infinite alternate;
-}
-
-@keyframes pulseSignal {
-    from { opacity: 0.3; }
-    to { opacity: 1; }
 }
