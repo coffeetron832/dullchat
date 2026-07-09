@@ -81,16 +81,30 @@ function initPeer(userId, isHost, targetRoomId = null) {
     peer.on('error', (err) => {
         console.error('Error en PeerJS:', err);
         
-        // CORRECCIÓN: Si la sala no existe o ya fue eliminada en la red
-        if (err.type === 'peer-not-found' && !isHost) {
-            isRoomActive = false;
-            if (peer) peer.destroy();
-            
-            // Regresa directamente a home sin mostrar la sala rota
-            resetAppToHome();
-            alert("La sala a la que intentas acceder ya no existe o el enlace es inválido.");
-        } else {
-            alert("Ocurrió un error en la conexión: " + err.type);
+        isRoomActive = false;
+        if (peer) peer.destroy();
+        
+        // Retornar a la página de inicio limpiando rastros visuales
+        resetAppToHome();
+
+        // Traducción de errores técnicos a lenguaje amigable
+        switch (err.type) {
+            case 'peer-not-found':
+            case 'peer-unavailable':
+                alert("La sala a la que intentas acceder ya no existe, está llena o el enlace es inválido.");
+                break;
+            case 'network':
+                alert("Hubo un problema con tu conexión a internet. Por favor, verifica tu red.");
+                break;
+            case 'disconnected':
+                alert("Te has desconectado del servidor de emparejamiento. Volviendo al menú principal.");
+                break;
+            case 'browser-incompatible':
+                alert("Tu navegador no es compatible con la tecnología P2P de esta aplicación.");
+                break;
+            default:
+                alert("No se pudo establecer la conexión con la sala en este momento.");
+                break;
         }
     });
 }
@@ -107,7 +121,7 @@ function setupConnectionTrack(conn) {
         console.log("Conectado con éxito a: " + conn.peer);
         connections.push(conn);
         
-        // CORRECCIÓN: Revelamos la interfaz de la sala para el Invitado SÓLO si la conexión P2P se abrió con éxito
+        // Revelamos la interfaz de la sala para el Invitado SÓLO si la conexión P2P se abrió con éxito
         if (roleEl.textContent === "Invitado" && roomSection.classList.contains("hidden")) {
             brandHeader.classList.add("hidden");
             homeSection.classList.add("hidden");
@@ -121,7 +135,7 @@ function setupConnectionTrack(conn) {
     // Escuchar datos recibidos
     conn.on('data', (data) => {
         if (data.type === "ROOM_DESTROYED") {
-            handleRoomDestructionByHost("El anfitrión ha destruido la sala. Redirigiendo...");
+            handleRoomDestructionByHost("El anfitrión ha cerrado esta sala. Redirigiendo al inicio...");
             return;
         }
 
@@ -262,8 +276,6 @@ window.addEventListener("DOMContentLoaded", () => {
         destroyRoomBtn.textContent = "Abandonar sala";
         destroyRoomBtn.classList.remove("danger"); 
 
-        // CAMBIO AQUÍ: Al cargar por link, dejamos la UI en Home ("Cargando...") 
-        // mientras PeerJS intenta rastrear al host en la red P2P.
         isRoomActive = true;
         updateParticipantsUI();
         initPeer(myUserId, false, roomParam);
