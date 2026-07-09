@@ -18,6 +18,10 @@ const roleEl = document.getElementById("role");
 const connectedCountEl = document.getElementById("connectedCount");
 const participantsListEl = document.getElementById("participantsList");
 
+// --- NUEVOS ELEMENTOS PARA EL INDICADOR DE SEÑAL P2P ---
+const signalIconEl = document.getElementById("signalIcon");
+const connectionStatusEl = document.getElementById("connectionStatus");
+
 const messageInput = document.getElementById("messageInput"); 
 const sendBox = document.getElementById("sendBox"); 
 const messagesContainer = document.getElementById("messages"); 
@@ -189,6 +193,24 @@ function updateParticipantsUI() {
     connectedCountEl.textContent = connections.length + 1;
 }
 
+// --- FUNCIÓN PARA MANEJAR LAS CLASES DEL ICONO DE SEÑAL ---
+function updateConnectionStatusUI(status) {
+    if (!signalIconEl || !connectionStatusEl) return;
+    
+    signalIconEl.classList.remove('signal-online', 'signal-connecting', 'signal-offline');
+    
+    if (status === 'online') {
+        signalIconEl.classList.add('signal-online');
+        connectionStatusEl.textContent = "Conectado";
+    } else if (status === 'connecting') {
+        signalIconEl.classList.add('signal-connecting');
+        connectionStatusEl.textContent = "Reconectando...";
+    } else if (status === 'offline') {
+        signalIconEl.classList.add('signal-offline');
+        connectionStatusEl.textContent = "Sin conexión";
+    }
+}
+
 // --- FUNCIÓN PARA INICIALIZAR PEERJS (CON RECONEXIÓN AUTOMÁTICA COHERENTE) ---
 function initPeer(userId, isHost, targetRoomId = null) {
     peer = new Peer(userId, {
@@ -197,6 +219,7 @@ function initPeer(userId, isHost, targetRoomId = null) {
 
     peer.on('open', (id) => {
         console.log('Mi ID de PeerJS es: ' + id);
+        updateConnectionStatusUI('online'); // Todo correcto, pasamos a verde
         
         if (!isHost && targetRoomId) {
             connectToPeer(targetRoomId);
@@ -210,6 +233,8 @@ function initPeer(userId, isHost, targetRoomId = null) {
     // Intentar reconectar si se pierde el enlace con el servidor de señalización
     peer.on('disconnected', () => {
         console.log('Conexión parpadeante con la señalización. Intentando recuperar la sesión...');
+        updateConnectionStatusUI('connecting'); // Cambiamos el icono a amarillo parpadeante
+        
         if (isRoomActive && !peer.destroyed) {
             peer.reconnect();
         }
@@ -221,6 +246,8 @@ function initPeer(userId, isHost, targetRoomId = null) {
         // SALVAVIDAS CONTRA MICRO-CORTES: Si parpadea la red, damos margen de recuperación
         if (err.type === 'network' || err.type === 'disconnect') {
             console.log('Detectada inestabilidad de red. Esperando estabilización...');
+            updateConnectionStatusUI('connecting'); // Aseguramos estado amarillo en micro-corte
+            
             setTimeout(() => {
                 if (peer && peer.disconnected && !peer.destroyed && isRoomActive) {
                     peer.reconnect();
@@ -231,6 +258,7 @@ function initPeer(userId, isHost, targetRoomId = null) {
         
         // Si el error es insalvable, procedemos al cierre seguro de la sala
         isRoomActive = false;
+        updateConnectionStatusUI('offline'); // El icono pasa a rojo definitivo
         if (peer) peer.destroy();
         
         resetAppToHome();
@@ -322,6 +350,7 @@ function setupConnectionTrack(conn) {
 // --- FUNCIÓN PARA EXPULSAR A LOS INVITADOS CUANDO LA SALA SE ROMPE ---
 function handleRoomDestructionByHost(alertMessage) {
     isRoomActive = false;
+    updateConnectionStatusUI('offline');
     alert(alertMessage);
     
     if (peer) {
@@ -483,6 +512,7 @@ destroyRoomBtn.addEventListener("click", () => {
 
         setTimeout(() => {
             if (peer) peer.destroy();
+            updateConnectionStatusUI('offline');
             resetAppToHome();
             alert("Sala destruida.");
         }, 100);
@@ -492,6 +522,7 @@ destroyRoomBtn.addEventListener("click", () => {
         if (!confirmLeave) return;
 
         if (peer) peer.destroy();
+        updateConnectionStatusUI('offline');
         resetAppToHome();
         alert("Has abandonado la sala.");
     }
