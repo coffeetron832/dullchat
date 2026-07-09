@@ -92,8 +92,13 @@
                             </div>
 
                             <div class="status-meta">
-                                <p id="connectionStatus">Conectado a la red P2P</p>
-                            </div>
+    <div class="status-indicator">
+        <svg id="signalIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 20h.01M7 20v-4M12 20v-8M17 20v-12M22 20v-4" />
+        </svg>
+        <span id="connectionStatus">Conectado</span>
+    </div>
+</div>
 
                             <button id="destroyRoom" class="danger">
                                 Destruir sala
