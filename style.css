@@ -1,14 +1,48 @@
 /* Importar la fuente UnifrakturMaguntia desde Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap');
 
+/* Animación sutil de barrido y desvanecimiento hacia arriba */
+@keyframes fadeSweep {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
 body {
     font-family: Arial, sans-serif;
-    max-width: 760px;
-    margin: 40px auto;
-    padding: 20px;
     color: #222;
     background: #fff;
     line-height: 1.5;
+    
+    /* Flexbox para centrar dinámicamente el contenedor en la ventana */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* El contenedor principal se ajusta pero no toma toda la pantalla */
+.container {
+    width: 100%;
+    max-width: 760px; /* Mantiene tu ancho preferido */
+    margin: auto;
+}
+
+/* Encabezado que contiene el logo gótico y el eslogan en el inicio */
+#brand-header {
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 h1 {
@@ -17,13 +51,11 @@ h1 {
     
     /* Aplicar la fuente gótica */
     font-family: 'UnifrakturMaguntia', cursive;
-    font-size: 7.5rem;
+    font-size: 5.5rem; /* Ajustado ligeramente para balancear el centrado */
     letter-spacing: 1px;
     
-    /* Borde negro puro, súper definido y delgado (0.5px o 1px) */
+    /* Borde negro puro, súper definido y delgado */
     -webkit-text-stroke: 1px #000000;
-    
-    /* Eliminamos el text-shadow anterior para quitar lo borroso */
 }
 
 .subtitle {
@@ -32,13 +64,23 @@ h1 {
     margin-bottom: 20px;
 }
 
+/* Vista de la Sala con animación activa al quitar el .hidden */
+#room:not(.hidden) {
+    animation: fadeSweep 0.4s ease-out forwards;
+}
+
+/* Vista de Home centrada internamente */
+#home {
+    text-align: center;
+}
+
 .hidden {
     display: none !important;
 }
 
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     font-weight: bold;
 }
 
@@ -47,7 +89,7 @@ button,
 input {
     font-size: 14px;
     padding: 6px;
-    box-sizing: border-box; /* Evita que el padding rompa los anchos del 100% */
+    box-sizing: border-box;
 }
 
 button {
@@ -69,18 +111,18 @@ button:hover {
 }
 
 /* ==========================================================================
-   NUEVO MAIN LAYOUT (Chat a la izquierda, Participantes a la derecha)
+   MAIN LAYOUT (Chat a la izquierda, Participantes a la derecha)
    ========================================================================== */
 .room-main-layout {
     display: flex;
     gap: 20px;
     margin: 20px 0;
-    align-items: stretch; /* Ambos recuadros tendrán la misma altura */
+    align-items: stretch;
 }
 
 /* Contenedor del Chat (Columna Izquierda) */
 .chat-container {
-    flex: 3; /* Toma 3 partes del espacio disponible */
+    flex: 3;
     display: flex;
     flex-direction: column;
     border: 1px solid #ddd;
@@ -91,7 +133,7 @@ button:hover {
 
 /* Área interna donde se acumulan los mensajes */
 #messages {
-    height: 300px; /* Altura fija con scroll */
+    height: 300px;
     overflow-y: auto;
     border: 1px solid #eee;
     background: #fff;
@@ -124,14 +166,14 @@ button:hover {
 }
 
 #messageInput {
-    flex: 1; /* El input se estira todo lo posible */
+    flex: 1;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
 
 /* Contenedor de Participantes (Columna Derecha) */
 .participants {
-    flex: 1; /* Toma 1 parte del espacio disponible */
+    flex: 1;
     min-width: 180px;
     border: 1px solid #ddd;
     border-radius: 6px;
@@ -164,7 +206,7 @@ button:hover {
 }
 
 /* ==========================================================================
-   NUEVO FOOTER LAYOUT (Información de la sala abajo)
+   FOOTER LAYOUT (Información de la sala abajo)
    ========================================================================== */
 .room-footer-layout {
     background: #f7f7f7;
