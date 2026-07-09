@@ -206,6 +206,7 @@ button:hover {
     margin-bottom: 8px;
     word-break: break-word;
     font-size: 17px;
+    line-height: 1.2;
 }
 .message.system {
     color: #777;
