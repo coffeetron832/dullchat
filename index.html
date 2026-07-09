@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DullChat</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>DullChat</h1>
+
+    <p class="subtitle">
+        Conversaciones privadas y temporales.
+    </p>
+
+    <div id="home">
+
+        <label for="capacity">Capacidad máxima</label>
+
+        <select id="capacity">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+        </select>
+
+        <button id="createRoom">
+            Crear sala
+        </button>
+
+    </div>
+
+    <div id="room" class="hidden">
+
+        <h2>Sala creada</h2>
+
+        <div class="info">
+            <p><strong>Sala:</strong> <span id="roomId"></span></p>
+            <p><strong>Tu ID:</strong> <span id="userId"></span></p>
+            <p><strong>Rol:</strong> Anfitrión</p>
+            <p><strong>Capacidad:</strong> <span id="roomCapacity"></span></p>
+        </div>
+
+        <div class="share-box">
+
+            <label>Enlace para compartir</label>
+
+            <input
+                type="text"
+                id="shareLink"
+                readonly
+            >
+
+            <button id="copyLink">
+                Copiar enlace
+            </button>
+
+        </div>
+
+        <hr>
+
+        <div class="chat-placeholder">
+
+            <p>
+                El sistema de mensajes se añadirá en la siguiente versión.
+            </p>
+
+        </div>
+
+        <hr>
+
+        <button id="destroyRoom" class="danger">
+            Destruir sala
+        </button>
+
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
