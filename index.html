@@ -182,9 +182,21 @@
         <p><a href="https://github.com/coffeetron832/dullchat" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;"><strong>dullchat</strong></a> v1.0.0</p>
         <p>&copy; 2026 | jahp. Todos los derechos reservados.</p>
         
-        <p class="disclaimer" title="dullchat opera de forma 100% serverless. Toda la comunicación se cifra localmente en tu dispositivo en modo de extremo a extremo (E2EE), garantizando privacidad absoluta fuera del alcance de terceros.">
-            Privacidad<span>(Más información)</span>
-        </p>
+        <!-- Modal de Privacidad y Descargo de Responsabilidad -->
+<div id="legalModal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>Aviso de Privacidad y Responsabilidad</h2>
+            <button id="closeModalBtn" class="modal-close-x">&times;</button>
+        </div>
+        <div class="modal-body" id="legalModalContent">
+            <!-- El texto se inyectará dinámicamente con JS -->
+        </div>
+        <div class="modal-footer">
+            <button id="acceptModalBtn">Entendido</button>
+        </div>
+    </div>
+</div>
     </footer>
     
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
