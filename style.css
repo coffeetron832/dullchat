@@ -83,9 +83,9 @@ body:has(#room:not(.hidden)) .container {
     flex-direction: column;
 }
 
-/* CORREGIDO: Añadido relative permanente para asegurar el anclaje de .room-controls */
+/* Anclaje relativo estructural para los elementos absolutos internos */
 #room {
-    position: relative; 
+    position: relative;
 }
 
 body:has(#room:not(.hidden)) #room {
@@ -125,7 +125,6 @@ h1 {
 body:has(#room:not(.hidden)) h1 {
     font-size: 3.5rem; 
     margin-top: 0;
-    text-align: left; /* Alineación limpia paralela a los controles */
 }
 
 body:has(#room:not(.hidden)) .subtitle {
@@ -180,11 +179,11 @@ button:hover {
 }
 
 /* ==========================================================================
-   NUEVO: BOTONES DE CONTROL FLOTANTES (ESQUINA SUPERIOR DERECHA)
+   BOTONES DE CONTROL FLOTANTES (ESQUINA SUPERIOR DERECHA)
    ========================================================================== */
 .room-controls {
     position: absolute;
-    top: -52px; /* Sincronizado milimétricamente al H1 compactado */
+    top: -52px; /* Sincronizado a la altura del H1 compactado */
     right: 0;
     display: flex;
     gap: 8px;
@@ -287,43 +286,49 @@ button:hover {
 }
 
 /* ==========================================================================
-   SIDEBAR PANEL TRANSFORMAR EN OVERLAYS FLOTANTES
+   SIDEBAR PANEL / OVERLAYS FLOTANTES (CORREGIDO)
    ========================================================================== */
 .sidebar-panel {
     position: absolute;
     top: 0;
     right: 0;
-    z-index: 95;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    z-index: 105; /* Por encima del layout del chat */
     width: 100%;
     max-width: 320px;
-    pointer-events: none; /* Deja pasar clicks al chat si no están activos */
+    pointer-events: none; /* Deja pasar clicks si está vacío */
 }
 
-/* CORREGIDO: Dropdowns alineados simétricamente cayendo de los botones */
+/* Forzamos que al mostrarse se calculen de forma limpia y visible */
 .participants-section,
 .room-meta-section {
     pointer-events: auto; /* Restaura interacción */
     position: absolute;
-    top: -5px; /* Caída fluida debajo de los botones */
+    top: 0;
     right: 0;
     width: 300px;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    background: #fdfdfd;
+    background: #fdfdfd !important; /* Garantiza fondo sólido */
     box-sizing: border-box;
     animation: fadeSweep 0.2s ease-out;
+}
+
+/* Cuando pierden la clase .hidden, se aseguran de heredar un display correcto */
+.participants-section:not(.hidden) {
+    display: flex !important;
+    flex-direction: column;
+}
+
+.room-meta-section:not(.hidden) {
+    display: flex !important;
+    flex-direction: column;
 }
 
 /* Caja de Participantes */
 .participants-section {
     padding: 15px;
     height: 300px; 
-    display: flex;
-    flex-direction: column;
     min-height: 0;
 }
 
@@ -352,8 +357,6 @@ button:hover {
 /* Caja de Herramientas e Info */
 .room-meta-section {
     padding: 15px;
-    display: flex;
-    flex-direction: column;
     gap: 12px;
 }
 
@@ -385,9 +388,9 @@ button:hover {
     color: #666;
 }
 
-.signal-online { color: #2ecc71; }      /* Verde */
-.signal-connecting { color: #f1c40f; }  /* Amarillo */
-.signal-offline { color: #e74c3c; }     /* Rojo */
+.signal-online { color: #2ecc71; }
+.signal-connecting { color: #f1c40f; }
+.signal-offline { color: #e74c3c; }
 
 .signal-connecting {
     animation: pulseSignal 1s infinite alternate;
@@ -417,20 +420,19 @@ button:hover {
     position: absolute !important;
     bottom: 42px !important;
     left: 0 !important;
-    z-index: 9999 !important; /* Capa prioritaria flotante */
+    z-index: 9999 !important;
 }
 
-/* Sobreescritura estricta de contenedores nativos de Picmo */
 #emojiPickerWrapper .picmo__picker,
 #emojiPickerWrapper .picker-container,
 #emojiPickerWrapper [data-picker] {
-    --picker-width: 280px !important;      /* Forzar ancho compacto */
-    --picker-height: 320px !important;     /* Forzar alto compacto */
+    --picker-width: 280px !important;
+    --picker-height: 320px !important;
     width: 280px !important;               
     height: 320px !important;              
-    background-color: #ffffff !important;  /* Opacidad sólida absoluta */
+    background-color: #ffffff !important;
     font-size: 13px !important;            
-    border-radius: 0 !important;           /* Estética angular retro */
+    border-radius: 0 !important;
     border: 1px solid #ccc !important;     
     box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1) !important;
 }
@@ -484,50 +486,46 @@ button:hover {
 }
 
 /* ==========================================================================
-   VU METER COMPACTO (TRES COLORES COHERENTES)
+   VU METER COMPACTO
    ========================================================================== */
 .vu-container {
     display: flex;
-    flex-direction: column; /* Apiladas verticalmente */
+    flex-direction: column;
     justify-content: space-between;
     width: 8px;
-    height: 32px; /* Alineado al alto promedio del botón */
+    height: 32px;
     align-self: center;
     gap: 2px;
-    margin-right: 2px; /* Separación sutil del botón del mic */
+    margin-right: 2px;
 }
 
 .vu-bar {
     flex: 1;
     width: 100%;
     background-color: #ccc;
-    opacity: 0.25; /* Apagado por defecto */
-    transition: opacity 0.05s ease; /* Transición ultra veloz para respuesta inmediata */
+    opacity: 0.25;
+    transition: opacity 0.05s ease;
 }
 
-/* Colores encendidos */
 .vu-bar.vu-green.lit  { background-color: #2ecc71; opacity: 1; box-shadow: 0 0 4px #2ecc71; }
 .vu-bar.vu-yellow.lit { background-color: #f1c40f; opacity: 1; box-shadow: 0 0 4px #f1c40f; }
 .vu-bar.vu-red.lit    { background-color: #e74c3c; opacity: 1; box-shadow: 0 0 4px #e74c3c; }
 
-
 /* ==========================================================================
-   NUEVO: RESPONSIVIDAD ESTRICTA PARA TELÉFONOS (MÓVIL)
+   RESPONSIVIDAD ESTRICTA PARA TELÉFONOS (MÓVIL)
    ========================================================================== */
 @media (max-width: 768px) {
-    /* Ajustes generales del viewport */
     h1 {
-        font-size: 4rem; /* Evita desbordamiento horizontal en Home */
-        -webkit-font-smoothing: antialiased;    /* Suaviza bordes en WebKit (iOS/Chrome) */
-        -moz-osx-font-smoothing: grayscale;       /* Suaviza bordes en Firefox OS X */
-        -webkit-text-stroke: 0.5px #000000;      /* Reduce el grosor del borde en pantallas pequeñas */
+        font-size: 4rem;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        -webkit-text-stroke: 0.5px #000000;
     }
 
     body:has(#room:not(.hidden)) h1 {
-        font-size: 2.2rem; /* Compacta el branding superior en la sala activa */
+        font-size: 2.2rem;
     }
 
-    /* Mover los botones flotantes en móviles para que queden mejor alineados */
     .room-controls {
         top: -42px;
     }
@@ -536,20 +534,17 @@ button:hover {
         padding: 10px;
     }
 
-    /* Modificación del pipeline elástico en móvil para evitar scroll global */
     body:has(#room:not(.hidden)) .main-wrapper {
         height: calc(100vh - 45px);
         padding: 8px;
     }
 
-    /* Mantener comportamiento vertical e impedir desbordamientos */
     .room-main-layout {
         flex-direction: column;
         gap: 0;
         overflow: hidden;
     }
 
-    /* El chat toma la prioridad total */
     .chat-container {
         flex: 1;
         min-height: 0;
@@ -564,7 +559,6 @@ button:hover {
         font-size: 15px;
     }
 
-    /* Evitar el zoom nativo e intrusivo en inputs de iOS al enfocar */
     select, button, input, #messageInput {
         font-size: 16px !important; 
     }
@@ -573,7 +567,6 @@ button:hover {
         display: none !important;
     }
    
-    /* Adaptar los overlays flotantes para ocupar el ancho completo del contenedor en móvil */
     .sidebar-panel {
         max-width: 100%;
         min-width: 100%;
@@ -582,15 +575,16 @@ button:hover {
 
     .participants-section,
     .room-meta-section {
-        width: 100%;
+        width: 100% !important;
         max-height: 280px;
+        position: relative; /* En móviles los apilamos bien en flujo */
+        top: 0;
     }
 
     #participantsList {
         max-height: 200px;
     }
 
-    /* Los botones de control se vuelven más accesibles al tacto */
     button, #createRoom {
         padding: 8px 14px;
     }
@@ -598,6 +592,6 @@ button:hover {
     #createRoom {
         margin-left: 0;
         margin-top: 8px;
-        width: 100%; /* El botón ocupa todo el ancho en el Home móvil */
+        width: 100%;
     }
 }
