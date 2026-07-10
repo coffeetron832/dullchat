@@ -260,7 +260,8 @@ function updateParticipantsUI() {
 
     connections.forEach(conn => {
         const li = document.createElement("li");
-        li.textContent = conn.peer;
+        // PRIORIDAD: Mostrar el ID legible obtenido en los metadatos de señalización
+        li.textContent = conn.customUserId || conn.peer;
         participantsListEl.appendChild(li);
     });
 
@@ -368,13 +369,30 @@ function initPeer(userId, isHost, targetRoomId = null) {
 }
 
 function connectToPeer(targetId) {
-    const conn = peer.connect(targetId);
+    // CORRECCIÓN: El Invitado envía su ID real de usuario en los metadatos de conexión al Host
+    const conn = peer.connect(targetId, {
+        metadata: { userId: userIdEl.textContent }
+    });
     setupConnectionTrack(conn);
 }
 
 function setupConnectionTrack(conn) {
     conn.on('open', () => {
-        console.log("Conectado con éxito a: " + conn.peer);
+        // CORRECCIÓN: Evaluamos el verdadero ID de la contraparte
+        let remoteUserId = conn.peer;
+
+        if (conn.metadata && conn.metadata.userId) {
+            // Si eres el Host, extraes el ID del invitado desde sus metadatos
+            remoteUserId = conn.metadata.userId;
+        } else if (conn.peer === roomIdEl.textContent) {
+            // Si eres el Invitado y el ID del peer es igual al ID de la sala, te conectaste al Host
+            remoteUserId = `Host-${conn.peer}`;
+        }
+
+        // Asignamos el ID limpio al objeto de la conexión de forma dinámica
+        conn.customUserId = remoteUserId;
+
+        console.log("Conectado con éxito a: " + remoteUserId);
         connections.push(conn);
         
         if (roleEl.textContent === "Invitado" && roomSection.classList.contains("hidden")) {
@@ -384,7 +402,7 @@ function setupConnectionTrack(conn) {
         }
         
         updateParticipantsUI();
-        appendMessage("Sistema", `Usuario ${conn.peer} se ha unido.`, "system");
+        appendMessage("Sistema", `Usuario ${remoteUserId} se ha unido.`, "system");
         
         playBitSound("join");
 
@@ -412,11 +430,13 @@ function setupConnectionTrack(conn) {
     });
 
     conn.on('close', () => {
-        console.log("Conexión cerrada con: " + conn.peer);
+        // CORRECCIÓN: Usamos el ID limpio para reportar la salida en consola y UI
+        const remoteUserId = conn.customUserId || conn.peer;
+        console.log("Conexión cerrada con: " + remoteUserId);
         connections = connections.filter(c => c.peer !== conn.peer);
         
         updateParticipantsUI();
-        appendMessage("Sistema", `Usuario ${conn.peer} ha salido.`, "system");
+        appendMessage("Sistema", `Usuario ${remoteUserId} ha salido.`, "system");
 
         if (roleEl.textContent === "Invitado" && connections.length === 0) {
             playBitSound("error");
@@ -524,6 +544,9 @@ function renderVuMeter() {
     vuAnimationId = requestAnimationFrame(renderVuMeter);
 }
 
+// ==========================================================================
+// INTERFAZ DE MICRÓFONO REUTILIZABLE
+// ==========================================================================
 function updateMicUI() {
     if (isMuted) {
         micBtnEl.classList.add("mic-muted");
@@ -634,7 +657,7 @@ function appendMessage(sender, text, type) {
 createRoomBtn.addEventListener("click", async () => {
     const capacity = document.getElementById("capacity").value;
     const roomId = generateRoomId();
-    const userId = `Host-${generateUserId()}`; 
+    const userId = `Host-${roomId}`; // Ajustado para que concuerde visualmente con el ID de la sala
 
     const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
 
@@ -720,10 +743,8 @@ destroyRoomBtn.addEventListener("click", () => {
 // INICIALIZACIÓN POR CICLO DE VIDA (DOM CONTENT LOADED)
 // ==========================================================================
 window.addEventListener("DOMContentLoaded", () => {
-    // Inicializar el modal descriptivo de responsabilidades
     initPrivacyModal();
 
-    // Comprobar parámetros de invitación directa URL
     const urlParams = new URLSearchParams(window.location.search);
     const roomParam = urlParams.get('room');
 
