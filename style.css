@@ -83,12 +83,16 @@ body:has(#room:not(.hidden)) .container {
     flex-direction: column;
 }
 
+/* CORREGIDO: Añadido relative permanente para asegurar el anclaje de .room-controls */
+#room {
+    position: relative; 
+}
+
 body:has(#room:not(.hidden)) #room {
     display: flex;
     flex-direction: column;
     flex: 1;
     height: 100%;
-    position: relative; /* Contexto de anclaje para los botones flotantes de la esquina */
 }
 
 /* ==========================================================================
@@ -121,6 +125,7 @@ h1 {
 body:has(#room:not(.hidden)) h1 {
     font-size: 3.5rem; 
     margin-top: 0;
+    text-align: left; /* Alineación limpia paralela a los controles */
 }
 
 body:has(#room:not(.hidden)) .subtitle {
@@ -179,7 +184,7 @@ button:hover {
    ========================================================================== */
 .room-controls {
     position: absolute;
-    top: -55px; /* Sincronizado a la altura del H1 compactado */
+    top: -52px; /* Sincronizado milimétricamente al H1 compactado */
     right: 0;
     display: flex;
     gap: 8px;
@@ -297,12 +302,12 @@ button:hover {
     pointer-events: none; /* Deja pasar clicks al chat si no están activos */
 }
 
-/* Convertidos a Dropdowns Absolutos que caen de los botones */
+/* CORREGIDO: Dropdowns alineados simétricamente cayendo de los botones */
 .participants-section,
 .room-meta-section {
     pointer-events: auto; /* Restaura interacción */
     position: absolute;
-    top: 0;
+    top: -5px; /* Caída fluida debajo de los botones */
     right: 0;
     width: 300px;
     border: 1px solid #ccc;
