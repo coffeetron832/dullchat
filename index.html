@@ -66,6 +66,24 @@
 
             <div id="room" class="hidden">
 
+                <div class="room-controls">
+                    <button id="toggleParticipants" type="button" title="Ver participantes">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </button>
+                    <button id="toggleMeta" type="button" title="Información de la sala">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" x2="12" y1="16" y2="12"></line>
+                            <line x1="12" x2="12" y1="8" y2="8"></line>
+                        </svg>
+                    </button>
+                </div>
+
                 <div class="room-main-layout">
                     
                     <div class="chat-container" style="position: relative;">
@@ -114,14 +132,14 @@
 
                     <div class="sidebar-panel">
 
-                        <div class="participants-section">
+                        <div id="participantsOverlay" class="participants-section hidden">
                             <h3>Participantes</h3>
                             <ul id="participantsList">
                                 <li>Cargando...</li>
                             </ul>
                         </div>
 
-                        <div class="room-meta-section">
+                        <div id="metaOverlay" class="room-meta-section hidden">
                             
                             <div class="info-meta">
                                 <p><strong>Sala:</strong> <span id="roomId">-</span></p>
@@ -201,6 +219,34 @@
         document.addEventListener('click', (e) => {
             if (wrapper && !wrapper.contains(e.target) && e.target.id !== 'emojiBtn') {
                 wrapper.classList.add('hidden');
+            }
+        });
+
+        // NUEVO: Lógica básica de toggle para los botones independientes de la barra lateral
+        const btnPart = document.getElementById('toggleParticipants');
+        const btnMeta = document.getElementById('toggleMeta');
+        const overlayPart = document.getElementById('participantsOverlay');
+        const overlayMeta = document.getElementById('metaOverlay');
+
+        btnPart.addEventListener('click', (e) => {
+            e.stopPropagation();
+            overlayPart.classList.toggle('hidden');
+            overlayMeta.classList.add('hidden'); // Cierra el otro por comodidad
+        });
+
+        btnMeta.addEventListener('click', (e) => {
+            e.stopPropagation();
+            overlayMeta.classList.toggle('hidden');
+            overlayPart.classList.add('hidden'); // Cierra el otro por comodidad
+        });
+
+        // Ocultar los páneles flotantes al hacer click fuera en el chat
+        document.addEventListener('click', (e) => {
+            if (overlayPart && !overlayPart.contains(e.target) && !btnPart.contains(e.target)) {
+                overlayPart.classList.add('hidden');
+            }
+            if (overlayMeta && !overlayMeta.contains(e.target) && !btnMeta.contains(e.target)) {
+                overlayMeta.classList.add('hidden');
             }
         });
     </script>
