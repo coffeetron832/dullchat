@@ -179,7 +179,7 @@ button:hover {
 }
 
 /* ==========================================================================
-   CORREGIDO: BOTONES DE CONTROL (EN FLUJO NATURAL Y VISIBLES)
+   BOTONES DE CONTROL (EN FLUJO NATURAL Y VISIBLES)
    ========================================================================== */
 .room-controls {
     display: flex;
@@ -210,17 +210,18 @@ button:hover {
 }
 
 /* ==========================================================================
-   MAIN LAYOUT (Estructura de Columna Única para Mensajes Centrados)
+   MAIN LAYOUT (Estructura Corregida para Aislamiento de Scroll)
    ========================================================================== */
 .room-main-layout {
     display: flex;
     flex-direction: column;
-    margin-top: 0; /* Ajustado para acoplarse abajo de los controles */
+    margin-top: 0; 
     margin-bottom: 0;
     align-items: stretch; 
     flex: 1;
-    min-height: 0;
+    min-height: 0; /* CORREGIDO: Impide el desbordamiento hacia abajo en flexbox */
     position: relative;
+    overflow: hidden; /* Mantiene la caja rígida en el Viewport */
 }
 
 /* Contenedor del Chat (Ocupa el 100% centrado) */
@@ -233,17 +234,20 @@ button:hover {
     padding: 0;
     background: transparent;
     width: 100%;
+    min-height: 0; /* CORREGIDO: Permite calcular la reducción interna de los hijos */
 }
 
-/* Área de mensajes */
+/* Área de mensajes con scroll interno garantizado */
 #messages {
-    flex-grow: 1; 
-    overflow-y: auto;
+    flex: 1; /* Absorbe el espacio disponible en lugar de flex-grow fijo */
+    overflow-y: auto; /* Activa la barra de desplazamiento únicamente aquí */
     border: 1px solid #ddd;
     background: #fff;
     padding: 15px;
     margin-bottom: 12px;
     border-radius: 0;
+    scroll-behavior: smooth;
+    min-height: 0; /* CORREGIDO: Obliga a respetar los límites del contenedor padre */
 }
 
 /* Tipografía de Mensajería */
@@ -268,11 +272,12 @@ button:hover {
     color: #551A8B;
 }
 
-/* Barra inferior del chat */
+/* Barra inferior del chat estática */
 .message-box {
     display: flex;
     gap: 8px;
     position: relative; /* Contexto de anclaje absoluto para Picmo */
+    flex-shrink: 0; /* CORREGIDO: Protege el input de colapsar o moverse hacia abajo */
 }
 
 #messageInput {
@@ -287,7 +292,7 @@ button:hover {
 }
 
 /* ==========================================================================
-   SIDEBAR PANEL / OVERLAYS FLOTANTES (CORREGIDO)
+   SIDEBAR PANEL / OVERLAYS FLOTANTES
    ========================================================================== */
 .sidebar-panel {
     position: absolute;
