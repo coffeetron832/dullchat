@@ -1,0 +1,8 @@
+User-agent: *
+
+# Bloquea explícitamente cualquier URL que contenga parámetros de sala
+Disallow: /*?*room=
+Disallow: /*?*
+
+# Permite indexar únicamente la landing page limpia
+Allow: /$
