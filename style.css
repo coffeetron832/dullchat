@@ -83,7 +83,7 @@ body:has(#room:not(.hidden)) .container {
     flex-direction: column;
 }
 
-/* Anclaje relativo estructural para los elementos absolutos internos */
+/* Anclaje estructural de la sala */
 #room {
     position: relative;
 }
@@ -179,14 +179,14 @@ button:hover {
 }
 
 /* ==========================================================================
-   BOTONES DE CONTROL FLOTANTES (ESQUINA SUPERIOR DERECHA)
+   CORREGIDO: BOTONES DE CONTROL (EN FLUJO NATURAL Y VISIBLES)
    ========================================================================== */
 .room-controls {
-    position: absolute;
-    top: -52px; /* Sincronizado a la altura del H1 compactado */
-    right: 0;
     display: flex;
+    justify-content: flex-end; /* Los empuja perfectamente a la derecha */
     gap: 8px;
+    margin-bottom: 10px; /* Genera un respiro antes de la caja de mensajes */
+    width: 100%;
     z-index: 100;
 }
 
@@ -201,6 +201,7 @@ button:hover {
     padding: 8px;
     width: 36px;
     height: 36px;
+    transition: background 0.2s, color 0.2s;
 }
 
 .room-controls button:hover {
@@ -214,7 +215,7 @@ button:hover {
 .room-main-layout {
     display: flex;
     flex-direction: column;
-    margin-top: 10px;
+    margin-top: 0; /* Ajustado para acoplarse abajo de los controles */
     margin-bottom: 0;
     align-items: stretch; 
     flex: 1;
@@ -292,13 +293,13 @@ button:hover {
     position: absolute;
     top: 0;
     right: 0;
-    z-index: 105; /* Por encima del layout del chat */
+    z-index: 105; /* Prioridad de capa sobre los mensajes */
     width: 100%;
     max-width: 320px;
-    pointer-events: none; /* Deja pasar clicks si está vacío */
+    pointer-events: none; /* Deja pasar clicks si está cerrado */
 }
 
-/* Forzamos que al mostrarse se calculen de forma limpia y visible */
+/* Alineados perfectamente cayendo abajo de la barra de controles */
 .participants-section,
 .room-meta-section {
     pointer-events: auto; /* Restaura interacción */
@@ -309,12 +310,12 @@ button:hover {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    background: #fdfdfd !important; /* Garantiza fondo sólido */
+    background: #fdfdfd !important; /* Asegura fondo sólido sin transparencias */
     box-sizing: border-box;
     animation: fadeSweep 0.2s ease-out;
 }
 
-/* Cuando pierden la clase .hidden, se aseguran de heredar un display correcto */
+/* Forzar despliegue correcto al remover .hidden */
 .participants-section:not(.hidden) {
     display: flex !important;
     flex-direction: column;
@@ -526,8 +527,10 @@ button:hover {
         font-size: 2.2rem;
     }
 
+    /* En móviles se mantiene arriba en un flujo limpio */
     .room-controls {
-        top: -42px;
+        top: 0; 
+        margin-bottom: 8px;
     }
 
     .main-wrapper {
@@ -577,7 +580,7 @@ button:hover {
     .room-meta-section {
         width: 100% !important;
         max-height: 280px;
-        position: relative; /* En móviles los apilamos bien en flujo */
+        position: relative;
         top: 0;
     }
 
