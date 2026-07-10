@@ -603,3 +603,28 @@ button:hover {
         width: 100%;
     }
 }
+
+
+.disclaimer {
+    cursor: help;
+    border-bottom: 1px dotted #999;
+    transition: color 0.2s, border-color 0.2s;
+    font-size: 0.75rem; /* Asegura que sea legible pero pequeño */
+    color: #888;
+}
+
+.disclaimer:hover {
+    color: #551A8B; 
+    border-bottom: 1px solid #551A8B;
+}
+
+/* Opcional: si quieres que el "Legal" se vea como un botón minúsculo */
+.disclaimer span {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-left: 4px;
+    background: #eee;
+    padding: 1px 4px;
+    border-radius: 3px;
+}
