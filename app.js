@@ -37,12 +37,6 @@ const vuBars = [
     document.querySelector(".vu-red")
 ];
 
-// --- NUEVO: CONFIGURACIÓN DE BOTONES INDEPENDIENTES Y OVERLAYS DE LA BARRA LATERAL ---
-const toggleParticipantsBtn = document.getElementById("toggleParticipants");
-const toggleMetaBtn = document.getElementById("toggleMeta");
-const participantsOverlay = document.getElementById("participantsOverlay");
-const metaOverlay = document.getElementById("metaOverlay");
-
 // --- VARIABLES GLOBALES DE PEERJS Y ESTADO ---
 let peer = null;
 let connections = []; // Guardará las conexiones activas con otros peers
@@ -60,31 +54,6 @@ let activeCalls = [];       // Registro de tracks multimedia abiertos (PeerJS .c
 let audioAnalyser = null;   // Procesador FFT para medir decibelios
 let vuDataArray = null;     // Buffer numérico de espectro
 let vuAnimationId = null;   // ID del loop nativo del VU Meter
-
-// --- LÓGICA DE INTERMITENCIA/TOGGLE DE PANELES FLOTANTES ---
-if (toggleParticipantsBtn && toggleMetaBtn) {
-    toggleParticipantsBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        participantsOverlay.classList.toggle("hidden");
-        metaOverlay.classList.add("hidden"); // Cierra la información por comodidad visual
-    });
-
-    toggleMetaBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        metaOverlay.classList.toggle("hidden");
-        participantsOverlay.classList.add("hidden"); // Cierra los participantes por comodidad visual
-    });
-
-    // Cerrar los menús si haces clic en cualquier otra parte del chat
-    document.addEventListener("click", (e) => {
-        if (participantsOverlay && !participantsOverlay.contains(e.target) && !toggleParticipantsBtn.contains(e.target)) {
-            participantsOverlay.classList.add("hidden");
-        }
-        if (metaOverlay && !metaOverlay.contains(e.target) && !toggleMetaBtn.contains(e.target)) {
-            metaOverlay.classList.add("hidden");
-        }
-    });
-}
 
 // --- SINTETIZADOR DE SONIDOS BITS (WEB AUDIO API) ---
 function playBitSound(type) {
@@ -412,25 +381,27 @@ function handleIncomingCall(call) {
     });
 }
 
-// --- CAPTURA DE HARDWARE Y ANALIZADOR DE ESPECTRO ---
+// --- CAPTURA DE HARDWARE Y ANALIZADOR DE ESPECTRO (CORREGIDO PARA EVITAR DISTORSIÓN EN PC) ---
 async function initLocalAudio() {
     try {
         if (audioCtx.state === 'suspended') {
             await audioCtx.resume();
         }
 
+        // Restricciones aplicadas para corregir clipping y saturación agresiva en ordenadores
         const constraints = {
             audio: {
-                echoCancellation: true,      
-                noiseSuppression: true,      
-                autoGainControl: false,      
-                latency: { ideal: 0.02 }     
+                echoCancellation: true,      // Previene feedback acústico
+                noiseSuppression: true,      // Limpia siseos y ventiladores
+                autoGainControl: false,      // DESACTIVADO: Evita amplificación digital artificial destructiva
+                latency: { ideal: 0.02 }     // Fuerza baja latencia
             },
             video: false
         };
 
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
+        // Crear el pipeline de análisis de Web Audio API
         const source = audioCtx.createMediaStreamSource(localStream);
         audioAnalyser = audioCtx.createAnalyser();
         audioAnalyser.fftSize = 32; 
@@ -439,11 +410,13 @@ async function initLocalAudio() {
         
         source.connect(audioAnalyser);
         
+        // Sincronizar el track de hardware con el estado inicial del muteado
         localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
         
         updateMicUI();
         renderVuMeter();
 
+        // Si ya hay conexiones de datos establecidas previos al clic del mic, iniciamos llamadas por voz
         connections.forEach(conn => {
             const call = peer.call(conn.peer, localStream);
             handleIncomingCall(call);
@@ -473,6 +446,7 @@ function renderVuMeter() {
     }
     const average = total / vuDataArray.length; 
 
+    // Umbrales calibrados para los 3 tramos de color discretos
     const greenThreshold = 15;
     const yellowThreshold = 55;
     const redThreshold = 105;
@@ -510,6 +484,7 @@ function updateMicUI() {
     }
 }
 
+// --- EVENTO: INTERRUPTOR DEL MICRÓFONO ---
 micBtnEl.addEventListener("click", async () => {
     if (!localStream) {
         await initLocalAudio();
@@ -544,10 +519,7 @@ function resetAppToHome() {
     participantsListEl.innerHTML = "<li>Cargando...</li>";
     cryptoKey = null; 
 
-    // Forzar el ocultamiento de los paneles flotantes al salir al inicio
-    if (participantsOverlay) participantsOverlay.classList.add("hidden");
-    if (metaOverlay) metaOverlay.classList.add("hidden");
-
+    // Limpieza estricta de subprocesos y hardware multimedia
     if (vuAnimationId) {
         cancelAnimationFrame(vuAnimationId);
         vuAnimationId = null;
@@ -700,7 +672,7 @@ destroyRoomBtn.addEventListener("click", () => {
 
     } else {
         const confirmLeave = confirm("¿Seguro que deseas abandonar la sala?");
-        if (!confirmLeave) return; 
+        if (!confirmLeave) return; // Corregido el flag de validación local de salida
 
         if (peer) peer.destroy();
         updateConnectionStatusUI('offline');
