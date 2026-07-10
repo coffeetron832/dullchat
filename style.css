@@ -57,10 +57,10 @@ body {
     transition: max-width 0.3s ease;
 }
 
-/* Expansión del ancho si la sala está activa */
+/* Expansión balanceada del ancho si la sala está activa (centrado elegante) */
 #room:not(.hidden) ~ .container,
 .container:has(#room:not(.hidden)) {
-    max-width: 1050px;
+    max-width: 820px;
 }
 
 /* ==========================================================================
@@ -88,6 +88,7 @@ body:has(#room:not(.hidden)) #room {
     flex-direction: column;
     flex: 1;
     height: 100%;
+    position: relative; /* Contexto de anclaje para los botones flotantes de la esquina */
 }
 
 /* ==========================================================================
@@ -174,27 +175,59 @@ button:hover {
 }
 
 /* ==========================================================================
-   MAIN LAYOUT (Chat a la izquierda, Sidebar a la derecha)
+   NUEVO: BOTONES DE CONTROL FLOTANTES (ESQUINA SUPERIOR DERECHA)
+   ========================================================================== */
+.room-controls {
+    position: absolute;
+    top: -55px; /* Sincronizado a la altura del H1 compactado */
+    right: 0;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+}
+
+.room-controls button {
+    background: #f7f7f7;
+    color: #222;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    width: 36px;
+    height: 36px;
+}
+
+.room-controls button:hover {
+    background: #eee;
+    color: #551A8B;
+}
+
+/* ==========================================================================
+   MAIN LAYOUT (Estructura de Columna Única para Mensajes Centrados)
    ========================================================================== */
 .room-main-layout {
     display: flex;
-    gap: 20px;
+    flex-direction: column;
     margin-top: 10px;
     margin-bottom: 0;
     align-items: stretch; 
     flex: 1;
     min-height: 0;
+    position: relative;
 }
 
-/* Contenedor del Chat (Columna Izquierda) */
+/* Contenedor del Chat (Ocupa el 100% centrado) */
 .chat-container {
-    flex: 2;
+    flex: 1;
     display: flex;
     flex-direction: column;
     border: none;
     border-radius: 0; 
     padding: 0;
     background: transparent;
+    width: 100%;
 }
 
 /* Área de mensajes */
@@ -234,7 +267,7 @@ button:hover {
 .message-box {
     display: flex;
     gap: 8px;
-    position: relative; /* CRÍTICO: Contexto de anclaje absoluto para Picmo */
+    position: relative; /* Contexto de anclaje absoluto para Picmo */
 }
 
 #messageInput {
@@ -249,25 +282,41 @@ button:hover {
 }
 
 /* ==========================================================================
-   SIDEBAR PANEL (Participantes y Metadatos)
+   SIDEBAR PANEL TRANSFORMAR EN OVERLAYS FLOTANTES
    ========================================================================== */
 .sidebar-panel {
-    flex: 1;
-    max-width: 320px;
-    min-width: 250px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 95;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; 
-    gap: 15px;
+    gap: 0;
+    width: 100%;
+    max-width: 320px;
+    pointer-events: none; /* Deja pasar clicks al chat si no están activos */
 }
 
-/* Caja de Participantes (Arriba) */
+/* Convertidos a Dropdowns Absolutos que caen de los botones */
+.participants-section,
+.room-meta-section {
+    pointer-events: auto; /* Restaura interacción */
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    background: #fdfdfd;
+    box-sizing: border-box;
+    animation: fadeSweep 0.2s ease-out;
+}
+
+/* Caja de Participantes */
 .participants-section {
-    border: 1px solid #ddd;
-    border-radius: 6px;
     padding: 15px;
-    background: #f9f9f9;
-    flex-grow: 1; 
+    height: 300px; 
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -295,12 +344,9 @@ button:hover {
     border-bottom: 1px dotted #eee;
 }
 
-/* Caja de Herramientas e Info (Abajo) */
+/* Caja de Herramientas e Info */
 .room-meta-section {
-    border: 1px solid #ddd;
-    border-radius: 6px;
     padding: 15px;
-    background: #f7f7f7;
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -432,7 +478,6 @@ button:hover {
     margin-left: 4px;
 }
 
-
 /* ==========================================================================
    VU METER COMPACTO (TRES COLORES COHERENTES)
    ========================================================================== */
@@ -477,6 +522,11 @@ button:hover {
         font-size: 2.2rem; /* Compacta el branding superior en la sala activa */
     }
 
+    /* Mover los botones flotantes en móviles para que queden mejor alineados */
+    .room-controls {
+        top: -42px;
+    }
+
     .main-wrapper {
         padding: 10px;
     }
@@ -487,17 +537,17 @@ button:hover {
         padding: 8px;
     }
 
-    /* Colapsar chat y sidebar en una sola columna vertical */
+    /* Mantener comportamiento vertical e impedir desbordamientos */
     .room-main-layout {
         flex-direction: column;
-        gap: 12px;
-        overflow: hidden; /* El contenedor se fía del scroll de sus hijos */
+        gap: 0;
+        overflow: hidden;
     }
 
-    /* El chat toma la prioridad del viewport */
+    /* El chat toma la prioridad total */
     .chat-container {
         flex: 1;
-        min-height: 0; /* Permite reducción correcta en flexbox */
+        min-height: 0;
     }
 
     #messages {
@@ -506,7 +556,7 @@ button:hover {
     }
 
     .message {
-        font-size: 15px; /* Más cómodo para pantallas pequeñas */
+        font-size: 15px;
     }
 
     /* Evitar el zoom nativo e intrusivo en inputs de iOS al enfocar */
@@ -514,32 +564,25 @@ button:hover {
         font-size: 16px !important; 
     }
 
-   #emojiBtn, #emojiPickerWrapper {
+    #emojiBtn, #emojiPickerWrapper {
         display: none !important;
     }
    
-    /* El panel lateral pasa abajo y se vuelve compacto */
+    /* Adaptar los overlays flotantes para ocupar el ancho completo del contenedor en móvil */
     .sidebar-panel {
         max-width: 100%;
         min-width: 100%;
-        flex: none; /* No compite por espacio con el chat */
-        height: auto;
-        gap: 8px;
+        top: 0;
     }
 
-    /* Permitir altura auto o máxima contenida para participantes */
-    .participants-section {
-        max-height: 110px;
-        padding: 10px;
+    .participants-section,
+    .room-meta-section {
+        width: 100%;
+        max-height: 280px;
     }
 
     #participantsList {
-        max-height: 70px;
-    }
-
-    .room-meta-section {
-        padding: 10px;
-        gap: 8px;
+        max-height: 200px;
     }
 
     /* Los botones de control se vuelven más accesibles al tacto */
@@ -551,11 +594,5 @@ button:hover {
         margin-left: 0;
         margin-top: 8px;
         width: 100%; /* El botón ocupa todo el ancho en el Home móvil */
-    }
-
-    /* Asegurar que el selector flotante no se tape en pantallas estrechas */
-    #emojiPickerWrapper {
-        bottom: 46px !important;
-        left: 0 !important;
     }
 }
