@@ -250,14 +250,14 @@ button:hover {
 .message {
     margin-bottom: 8px;
     word-break: break-word;
-    font-size: 17px;
+    font-size: 19px;
     line-height: 1.2;
 }
 
 .message.system {
     color: #777;
     font-style: italic;
-    font-size: 14px;
+    font-size: 17px;
 }
 
 .message.sent {
