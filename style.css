@@ -219,7 +219,7 @@ button:hover {
     margin-bottom: 0;
     align-items: stretch; 
     flex: 1;
-    min-height: 0; /* CORREGIDO: Impide el desbordamiento hacia abajo en flexbox */
+    min-height: 0; /* Impide el desbordamiento hacia abajo en flexbox */
     position: relative;
     overflow: hidden; /* Mantiene la caja rígida en el Viewport */
 }
@@ -234,7 +234,7 @@ button:hover {
     padding: 0;
     background: transparent;
     width: 100%;
-    min-height: 0; /* CORREGIDO: Permite calcular la reducción interna de los hijos */
+    min-height: 0; /* Permite calcular la reducción interna de los hijos */
 }
 
 /* Área de mensajes con scroll interno garantizado */
@@ -247,7 +247,7 @@ button:hover {
     margin-bottom: 12px;
     border-radius: 0;
     scroll-behavior: smooth;
-    min-height: 0; /* CORREGIDO: Obliga a respetar los límites del contenedor padre */
+    min-height: 0; /* Obliga a respetar los límites del contenedor padre */
 }
 
 /* Tipografía de Mensajería */
@@ -277,18 +277,18 @@ button:hover {
     display: flex;
     gap: 8px;
     position: relative; /* Contexto de anclaje absoluto para Picmo */
-    flex-shrink: 0; /* CORREGIDO: Protege el input de colapsar o moverse hacia abajo */
+    flex-shrink: 0; /* Protege el input de colapsar o moverse hacia abajo */
 }
 
 #messageInput {
     flex: 1;
     border: 1px solid #ccc;
-    border-radius: 0;
+    border-radius: 4px; /* CORREGIDO: Redondeo sutil aplicado */
     padding: 8px;
 }
 
 #sendBox {
-    border-radius: 0;
+    border-radius: 4px; /* CORREGIDO: Redondeo sutil aplicado */
 }
 
 /* ==========================================================================
@@ -438,7 +438,7 @@ button:hover {
     height: 320px !important;              
     background-color: #ffffff !important;
     font-size: 13px !important;            
-    border-radius: 0 !important;
+    border-radius: 4px !important; /* CORREGIDO: Redondeo sutil aplicado también a la caja del popup */
     border: 1px solid #ccc !important;     
     box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1) !important;
 }
@@ -447,7 +447,7 @@ button:hover {
     background: #f7f7f7;
     color: #551A8B;
     border: 1px solid #ccc;
-    border-radius: 0; 
+    border-radius: 4px; /* CORREGIDO: Redondeo sutil aplicado */
     padding: 6px 10px;
     cursor: pointer;
 }
