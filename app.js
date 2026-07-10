@@ -1,3 +1,6 @@
+// ==========================================================================
+// SELECCIÓN DE ELEMENTOS DEL DOM
+// ==========================================================================
 const createRoomBtn = document.getElementById("createRoom");
 const roomSection = document.getElementById("room");
 const homeSection = document.getElementById("home");
@@ -37,7 +40,9 @@ const vuBars = [
     document.querySelector(".vu-red")
 ];
 
-// --- VARIABLES GLOBALES DE PEERJS Y ESTADO ---
+// ==========================================================================
+// VARIABLES GLOBALES DE PEERJS Y ESTADO
+// ==========================================================================
 let peer = null;
 let connections = []; // Guardará las conexiones activas con otros peers
 let isRoomActive = true; // Controla si la sala sigue vigente
@@ -55,7 +60,67 @@ let audioAnalyser = null;   // Procesador FFT para medir decibelios
 let vuDataArray = null;     // Buffer numérico de espectro
 let vuAnimationId = null;   // ID del loop nativo del VU Meter
 
-// --- SINTETIZADOR DE SONIDOS BITS (WEB AUDIO API) ---
+// ==========================================================================
+// MANEJO DEL MODAL DE DESCARGO DE RESPONSABILIDAD (PRIVACIDAD)
+// ==========================================================================
+const legalText = `
+    <p><strong>dullchat</strong> es una plataforma experimental de mensajería instantánea distribuida y serverless diseñada bajo principios de privacidad absoluta.</p>
+    
+    <h3>1. Naturaleza del Servicio y Cifrado</h3>
+    <p>Toda la comunicación entre dispositivos se realiza mediante cifrado de extremo a extremo (E2EE).</p>
+    <ul>
+        <li><strong>Sin almacenamiento central:</strong> Los mensajes, archivos, credenciales y metadatos se procesan estrictamente de manera local en tu navegador y se transmiten directamente de par a par (P2P).</li>
+        <li>No mantenemos servidores de bases de datos ni respaldos. Una vez cerrada la sala o la pestaña, los datos se eliminan de forma permanente e irrecuperable.</li>
+    </ul>
+
+    <h3>2. Exclusión de Responsabilidad por Contenido</h3>
+    <p>Debido a la arquitectura técnica descentralizada de la aplicación, los desarrolladores no tienen la capacidad de interceptar, auditar, moderar ni bloquear el contenido de ninguna sala.</p>
+    <ul>
+        <li>El usuario es el único y exclusivo responsable de la información compartida durante las sesiones.</li>
+        <li>No asumimos responsabilidad legal alguna por usos inapropiados, ilícitos, difamatorios o fraudulentos del servicio.</li>
+    </ul>
+
+    <h3>3. Gestión de Enlaces y Claves de Acceso</h3>
+    <p>Los identificadores de las salas de chat actúan como llaves criptográficas generadas localmente.</p>
+    <ul>
+        <li>Es tu estricta responsabilidad custodiar estos enlaces y compartirlos únicamente con destinatarios autorizados.</li>
+        <li>Si un tercero accede a tu enlace, podrá unirse a la sala. El sistema no provee herramientas centralizadas para la revocación remota de accesos ni recuperación de salas perdidas.</li>
+    </ul>
+
+    <h3>4. Exclusión de Garantías Técnicas</h3>
+    <p>El software se entrega "tal cual" (As Is), sin garantías de disponibilidad permanente o inmunidad ante fallas de red asociadas a los navegadores o proxies de conexión WebRTC/STUN de terceros.</p>
+`;
+
+function initPrivacyModal() {
+    const disclaimerBtn = document.querySelector('.disclaimer');
+    const modal = document.getElementById('legalModal');
+    const modalContent = document.getElementById('legalModalContent');
+    const closeX = document.getElementById('closeModalBtn');
+    const acceptBtn = document.getElementById('acceptModalBtn');
+
+    if (disclaimerBtn && modal) {
+        disclaimerBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalContent.innerHTML = legalText;
+            modal.classList.remove('hidden');
+        });
+    }
+
+    const closeModal = () => { if (modal) modal.classList.add('hidden'); };
+
+    if (closeX) closeX.addEventListener('click', closeModal);
+    if (acceptBtn) acceptBtn.addEventListener('click', closeModal);
+
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    }
+}
+
+// ==========================================================================
+// SINTETIZADOR DE SONIDOS BITS (WEB AUDIO API)
+// ==========================================================================
 function playBitSound(type) {
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
@@ -94,7 +159,9 @@ function playBitSound(type) {
     }
 }
 
-// Derivar una clave AES-GCM a partir del roomId usando PBKDF2
+// ==========================================================================
+// SEGURIDAD CRIPTOGRÁFICA Y GENERADORES DE IDS
+// ==========================================================================
 async function deriveKeyFromRoomId(roomId) {
     const encoder = new TextEncoder();
     const baseKey = await window.crypto.subtle.importKey(
@@ -119,7 +186,6 @@ async function deriveKeyFromRoomId(roomId) {
     );
 }
 
-// Cifrar texto plano
 async function encryptMessage(plainText) {
     if (!cryptoKey) return plainText;
     const encoder = new TextEncoder();
@@ -138,7 +204,6 @@ async function encryptMessage(plainText) {
     return btoa(String.fromCharCode.apply(null, combinedArray));
 }
 
-// Descifrar texto codificado en Base64
 async function decryptMessage(base64Data) {
     if (!cryptoKey) return base64Data;
     try {
@@ -180,6 +245,9 @@ function generateRoomId() {
     return `${first}-${second}`;
 }
 
+// ==========================================================================
+// INTERFAZ DE USUARIO Y SEÑALIZACIÓN P2P
+// ==========================================================================
 function updateParticipantsUI() {
     participantsListEl.innerHTML = "";
 
@@ -216,7 +284,9 @@ function updateConnectionStatusUI(status) {
     }
 }
 
-// --- INICIALIZAR PEERJS (CON RECONEXIÓN AUTOMÁTICA COHERENTE) ---
+// ==========================================================================
+// INICIALIZACIÓN Y CONTROL DE PEERJS
+// ==========================================================================
 function initPeer(userId, isHost, targetRoomId = null) {
     peer = new Peer(userId, {
         debug: 1 
@@ -235,13 +305,11 @@ function initPeer(userId, isHost, targetRoomId = null) {
         setupConnectionTrack(conn);
     });
 
-    // Escuchar solicitudes entrantes de transmisión por voz
     peer.on('call', (call) => {
         if (localStream) {
             call.answer(localStream);
             handleIncomingCall(call);
         } else {
-            // Respondemos una llamada vacía transitoria para evitar el bloqueo del peer remoto
             call.answer();
             handleIncomingCall(call);
         }
@@ -304,7 +372,6 @@ function connectToPeer(targetId) {
     setupConnectionTrack(conn);
 }
 
-// --- CONFIGURAR CANALES DE COMUNICACIÓN ---
 function setupConnectionTrack(conn) {
     conn.on('open', () => {
         console.log("Conectado con éxito a: " + conn.peer);
@@ -321,7 +388,6 @@ function setupConnectionTrack(conn) {
         
         playBitSound("join");
 
-        // Al unirse un peer, si ya inicializamos hardware de voz, lo llamamos directamente
         if (localStream) {
             const call = peer.call(conn.peer, localStream);
             handleIncomingCall(call);
@@ -359,7 +425,6 @@ function setupConnectionTrack(conn) {
     });
 }
 
-// --- MANEJAR FLUJOS DE AUDIO DE TERCEROS ---
 function handleIncomingCall(call) {
     activeCalls.push(call);
 
@@ -381,27 +446,27 @@ function handleIncomingCall(call) {
     });
 }
 
-// --- CAPTURA DE HARDWARE Y ANALIZADOR DE ESPECTRO (CORREGIDO PARA EVITAR DISTORSIÓN EN PC) ---
+// ==========================================================================
+// CAPTURA MULTIMEDIA Y VU METER
+// ==========================================================================
 async function initLocalAudio() {
     try {
         if (audioCtx.state === 'suspended') {
             await audioCtx.resume();
         }
 
-        // Restricciones aplicadas para corregir clipping y saturación agresiva en ordenadores
         const constraints = {
             audio: {
-                echoCancellation: true,      // Previene feedback acústico
-                noiseSuppression: true,      // Limpia siseos y ventiladores
-                autoGainControl: false,      // DESACTIVADO: Evita amplificación digital artificial destructiva
-                latency: { ideal: 0.02 }     // Fuerza baja latencia
+                echoCancellation: true,      
+                noiseSuppression: true,      
+                autoGainControl: false,      
+                latency: { ideal: 0.02 }     
             },
             video: false
         };
 
         localStream = await navigator.mediaDevices.getUserMedia(constraints);
         
-        // Crear el pipeline de análisis de Web Audio API
         const source = audioCtx.createMediaStreamSource(localStream);
         audioAnalyser = audioCtx.createAnalyser();
         audioAnalyser.fftSize = 32; 
@@ -410,13 +475,11 @@ async function initLocalAudio() {
         
         source.connect(audioAnalyser);
         
-        // Sincronizar el track de hardware con el estado inicial del muteado
         localStream.getAudioTracks().forEach(track => track.enabled = !isMuted);
         
         updateMicUI();
         renderVuMeter();
 
-        // Si ya hay conexiones de datos establecidas previos al clic del mic, iniciamos llamadas por voz
         connections.forEach(conn => {
             const call = peer.call(conn.peer, localStream);
             handleIncomingCall(call);
@@ -430,7 +493,6 @@ async function initLocalAudio() {
     }
 }
 
-// --- RENDERIZADO DEL VU METER COMPACTO ---
 function renderVuMeter() {
     if (isMuted || !audioAnalyser) {
         vuBars.forEach(bar => { if (bar) bar.classList.remove("lit"); });
@@ -446,7 +508,6 @@ function renderVuMeter() {
     }
     const average = total / vuDataArray.length; 
 
-    // Umbrales calibrados para los 3 tramos de color discretos
     const greenThreshold = 15;
     const yellowThreshold = 55;
     const redThreshold = 105;
@@ -484,7 +545,6 @@ function updateMicUI() {
     }
 }
 
-// --- EVENTO: INTERRUPTOR DEL MICRÓFONO ---
 micBtnEl.addEventListener("click", async () => {
     if (!localStream) {
         await initLocalAudio();
@@ -496,6 +556,9 @@ micBtnEl.addEventListener("click", async () => {
     updateMicUI();
 });
 
+// ==========================================================================
+// FLUJOS DE SALIDA Y REINICIO DE LA APP
+// ==========================================================================
 function handleRoomDestructionByHost(alertMessage) {
     isRoomActive = false;
     updateConnectionStatusUI('offline');
@@ -508,7 +571,6 @@ function handleRoomDestructionByHost(alertMessage) {
     resetAppToHome();
 }
 
-// --- LIMPIAR INTERFAZ Y VOLVER A HOME ---
 function resetAppToHome() {
     roomIdEl.textContent = "";
     userIdEl.textContent = "";
@@ -519,7 +581,6 @@ function resetAppToHome() {
     participantsListEl.innerHTML = "<li>Cargando...</li>";
     cryptoKey = null; 
 
-    // Limpieza estricta de subprocesos y hardware multimedia
     if (vuAnimationId) {
         cancelAnimationFrame(vuAnimationId);
         vuAnimationId = null;
@@ -567,7 +628,9 @@ function appendMessage(sender, text, type) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight; 
 }
 
-// --- EVENTO: CREAR SALA (HOST) ---
+// ==========================================================================
+// DISPARADORES DE EVENTOS DEL USUARIO
+// ==========================================================================
 createRoomBtn.addEventListener("click", async () => {
     const capacity = document.getElementById("capacity").value;
     const roomId = generateRoomId();
@@ -595,7 +658,6 @@ createRoomBtn.addEventListener("click", async () => {
     initPeer(roomId, true);
 });
 
-// --- ENVIAR MENSAJE (CLICK) ---
 sendBox.addEventListener("click", async () => {
     if (!isRoomActive) return;
 
@@ -620,32 +682,6 @@ messageInput.addEventListener("keydown", (e) => {
     }
 });
 
-// --- EVENTO: DETECTAR SI ENTRA POR LINK DE INVITACIÓN ---
-window.addEventListener("DOMContentLoaded", () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const roomParam = urlParams.get('room');
-
-    if (roomParam) {
-        const myUserId = generateUserId();
-        
-        roomIdEl.textContent = roomParam;
-        userIdEl.textContent = myUserId;
-        roomCapacityEl.textContent = "N/A"; 
-        roleEl.textContent = "Invitado";     
-        shareLinkEl.value = window.location.href;
-
-        destroyRoomBtn.textContent = "Abandonar sala";
-        destroyRoomBtn.classList.remove("danger"); 
-
-        isRoomActive = true;
-        updateParticipantsUI();
-        
-        deriveKeyFromRoomId(roomParam).then(() => {
-            initPeer(myUserId, false, roomParam);
-        });
-    }
-});
-
 copyLinkBtn.addEventListener("click", async () => {
     try {
         await navigator.clipboard.writeText(shareLinkEl.value);
@@ -655,7 +691,6 @@ copyLinkBtn.addEventListener("click", async () => {
     }
 });
 
-// --- BOTÓN ACCIÓN: DESTRUIR (HOST) O ABANDONAR (INVITADO) ---
 destroyRoomBtn.addEventListener("click", () => {
     if (roleEl.textContent === "Anfitrión") {
         const confirmDelete = confirm("Esta acción eliminará la sala permanentemente para todos.");
@@ -672,11 +707,43 @@ destroyRoomBtn.addEventListener("click", () => {
 
     } else {
         const confirmLeave = confirm("¿Seguro que deseas abandonar la sala?");
-        if (!confirmLeave) return; // Corregido el flag de validación local de salida
+        if (!confirmLeave) return; 
 
         if (peer) peer.destroy();
         updateConnectionStatusUI('offline');
         resetAppToHome();
         alert("Has abandonado la sala.");
+    }
+});
+
+// ==========================================================================
+// INICIALIZACIÓN POR CICLO DE VIDA (DOM CONTENT LOADED)
+// ==========================================================================
+window.addEventListener("DOMContentLoaded", () => {
+    // Inicializar el modal descriptivo de responsabilidades
+    initPrivacyModal();
+
+    // Comprobar parámetros de invitación directa URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomParam = urlParams.get('room');
+
+    if (roomParam) {
+        const myUserId = generateUserId();
+        
+        roomIdEl.textContent = roomParam;
+        userIdEl.textContent = myUserId;
+        roomCapacityEl.textContent = "N/A"; 
+        roleEl.textContent = "Invitado";      
+        shareLinkEl.value = window.location.href;
+
+        destroyRoomBtn.textContent = "Abandonar sala";
+        destroyRoomBtn.classList.remove("danger"); 
+
+        isRoomActive = true;
+        updateParticipantsUI();
+        
+        deriveKeyFromRoomId(roomParam).then(() => {
+            initPeer(myUserId, false, roomParam);
+        });
     }
 });
