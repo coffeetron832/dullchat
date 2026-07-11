@@ -46,6 +46,7 @@ const vuBars = [
 let peer = null;
 let connections = []; // Guardará las conexiones activas con otros peers
 let isRoomActive = true; // Controla si la sala sigue vigente
+let mutedPeersByHost = new Set(); // Guarda los IDs de los invitados silenciados por el Host
 
 // --- CONFIGURACIÓN CRIPTOGRÁFICA (E2EE) ---
 const CRYPTO_SALT = new TextEncoder().encode("DullChatSalt2026");
@@ -59,6 +60,29 @@ let activeCalls = [];       // Registro de tracks multimedia abiertos (PeerJS .c
 let audioAnalyser = null;   // Procesador FFT para medir decibelios
 let vuDataArray = null;     // Buffer numérico de espectro
 let vuAnimationId = null;   // ID del loop nativo del VU Meter
+
+// ==========================================================================
+// INYECTAR ESTILOS PARA LOS BOTONES DE MODERACIÓN
+// ==========================================================================
+const style = document.createElement('style');
+style.textContent = `
+    #participantsList li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 8px;
+        margin-bottom: 4px;
+    }
+    .btn-mod-small {
+        font-size: 0.75rem !important;
+        padding: 2px 6px !important;
+        height: auto !important;
+        line-height: 1.2 !important;
+        margin-left: 4px;
+        cursor: pointer;
+    }
+`;
+document.head.appendChild(style);
 
 // ==========================================================================
 // MANEJO DEL MODAL DE DESCARGO DE RESPONSABILIDAD (PRIVACIDAD)
@@ -246,12 +270,12 @@ function generateRoomId() {
 }
 
 // ==========================================================================
-// INTERFAZ DE USUARIO Y SEÑALIZACIÓN P2P (DIBUJO ASIMÉTRICO)
+// INTERFAZ DE USUARIO Y SEÑALIZACIÓN P2P (DIBUJO ASIMÉTRICO ALINEADO)
 // ==========================================================================
 function updateParticipantsUI() {
     participantsListEl.innerHTML = "";
 
-    // Renderizar nuestro nodo propio primero
+    // Nodo del usuario propio
     const myLi = document.createElement("li");
     const strongEl = document.createElement("strong");
     strongEl.textContent = userIdEl.textContent;
@@ -266,33 +290,42 @@ function updateParticipantsUI() {
         const readableId = conn.customUserId || "Conectando...";
         
         if (isHost && conn.customUserId) {
-            // El anfitrión ve la lista con los controles de moderación inyectados
             const nameSpan = document.createElement("span");
-            nameSpan.textContent = readableId + " ";
+            nameSpan.textContent = readableId;
             li.appendChild(nameSpan);
 
+            // Contenedor para agrupar los botones alineados a la derecha
+            const btnGroup = document.createElement("div");
+
+            const isPeerMuted = mutedPeersByHost.has(conn.peer);
             const muteBtn = document.createElement("button");
-            muteBtn.textContent = "Silenciar";
-            muteBtn.classList.add("btn-action-small");
-            muteBtn.style.marginLeft = "8px";
+            muteBtn.textContent = isPeerMuted ? "Reactivar" : "Silenciar";
+            muteBtn.classList.add("btn-mod-small");
+            if (isPeerMuted) muteBtn.style.backgroundColor = "#4a4a4a";
+
             muteBtn.addEventListener("click", () => {
-                conn.send({ type: "FORCE_MUTE" });
+                if (mutedPeersByHost.has(conn.peer)) {
+                    mutedPeersByHost.delete(conn.peer);
+                    conn.send({ type: "FORCE_UNMUTE" });
+                } else {
+                    mutedPeersByHost.add(conn.peer);
+                    conn.send({ type: "FORCE_MUTE" });
+                }
+                updateParticipantsUI();
             });
 
             const kickBtn = document.createElement("button");
             kickBtn.textContent = "Expulsar";
-            kickBtn.classList.add("btn-action-small", "danger");
-            kickBtn.style.marginLeft = "4px";
+            kickBtn.classList.add("btn-mod-small", "danger");
             kickBtn.addEventListener("click", () => {
                 conn.send({ type: "FORCE_KICK" });
-                // Limpieza inmediata del lado del Host para cerrar el canal de datos
                 conn.close(); 
             });
 
-            li.appendChild(muteBtn);
-            li.appendChild(kickBtn);
+            btnGroup.appendChild(muteBtn);
+            btnGroup.appendChild(kickBtn);
+            li.appendChild(btnGroup);
         } else {
-            // El invitado simplemente ve la lista plana estructural
             li.textContent = readableId;
         }
         
@@ -457,7 +490,7 @@ function setupConnectionTrack(conn) {
             return;
         }
 
-        // Lógica de moderación forzada remota (Invitado intercepta)
+        // Lógica de moderación forzada remota (El Invitado intercepta)
         if (data.type === "FORCE_MUTE") {
             isMuted = true;
             if (localStream) {
@@ -468,12 +501,22 @@ function setupConnectionTrack(conn) {
             return;
         }
 
+        if (data.type === "FORCE_UNMUTE") {
+            isMuted = false;
+            if (localStream) {
+                localStream.getAudioTracks().forEach(track => track.enabled = true);
+            }
+            updateMicUI();
+            alert("El anfitrión ha reactivado tu micrófono.");
+            return;
+        }
+
         if (data.type === "FORCE_KICK") {
             isRoomActive = false;
             updateConnectionStatusUI('offline');
             alert("Has sido expulsado de la sala por el anfitrión.");
             if (peer) {
-                peer.destroy(); // Destruye inmediatamente la instancia para no dejar conexiones colgadas
+                peer.destroy(); 
             }
             resetAppToHome();
             return;
@@ -493,6 +536,7 @@ function setupConnectionTrack(conn) {
         const remoteUserId = conn.customUserId || conn.peer;
         console.log("Conexión cerrada con: " + remoteUserId);
         connections = connections.filter(c => c.peer !== conn.peer);
+        mutedPeersByHost.delete(conn.peer);
         
         updateParticipantsUI();
         appendMessage("Sistema", `Usuario ${remoteUserId} ha salido.`, "system");
@@ -662,6 +706,7 @@ function resetAppToHome() {
     messagesContainer.innerHTML = ""; 
     participantsListEl.innerHTML = "<li>Cargando...</li>";
     cryptoKey = null; 
+    mutedPeersByHost.clear();
 
     if (vuAnimationId) {
         cancelAnimationFrame(vuAnimationId);
