@@ -39,27 +39,35 @@
         <div class="container">
 
             <div id="brand-header">
-                <div class="header-top" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h1>dullchat</h1>
-                </div>
-                <p class="subtitle">Salas de chat temporales y privadas. Sin registros, sin rastreo.</p>
+                <h1>dullchat</h1>
+                <p class="subtitle">
+                    Crea salas privadas en un clic. Comunicación directa entre usuarios, lo que se habla aquí, se queda aquí.
+                </p>
             </div>
 
             <div id="home">
-                <label for="capacity">Capacidad de la sala:</label>
+
+                <label for="capacity">
+                    Capacidad de integrantes en la sala
+                </label>
+
                 <select id="capacity">
                     <option value="5">5</option>
                     <option value="10">10</option>
                     <option value="20">20</option>
                     <option value="50">50</option>
                 </select>
-                <button id="createRoom">Crear Sala</button>
+
+                <button id="createRoom">
+                    Crear sala
+                </button>
+
             </div>
 
             <div id="room" class="hidden">
 
                 <div class="room-controls">
-                    <button id="toggleParticipants" type="button" title="Ver participantes" aria-label="Ver participantes">
+                    <button id="toggleParticipants" type="button" title="Ver participantes">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                             <circle cx="9" cy="7" r="4"></circle>
@@ -67,7 +75,7 @@
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
                     </button>
-                    <button id="toggleMeta" type="button" title="Información de la sala" aria-label="Información de la sala">
+                    <button id="toggleMeta" type="button" title="Información de la sala">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="12" x2="12" y1="16" y2="12"></line>
@@ -80,20 +88,24 @@
                     
                     <div class="chat-container" style="position: relative;">
 
-                        <div id="messages"></div>
+                        <div id="messages">
+                            <div class="message system">
+                                <strong>Sistema:</strong> Bienvenido a DullChat.
+                            </div>
+                        </div>
 
                         <div id="emojiPickerWrapper" class="hidden"></div>
 
                         <div class="message-box">
-                            <button id="emojiBtn" type="button" title="Insertar emoji" aria-label="Insertar emoji">😊</button>
+                            <button id="emojiBtn" type="button" title="Insertar emoji">😊</button>
                             
                             <div id="vuMeter" class="vu-container">
-                                <div class="vu-bar vu-green"></div>
-                                <div class="vu-bar vu-yellow"></div>
                                 <div class="vu-bar vu-red"></div>
+                                <div class="vu-bar vu-yellow"></div>
+                                <div class="vu-bar vu-green"></div>
                             </div>
 
-                            <button id="micBtn" type="button" class="mic-muted" title="Activar/Silenciar Micrófono" aria-label="Activar/Silenciar Micrófono">
+                            <button id="micBtn" type="button" class="mic-muted" title="Activar/Silenciar Micrófono">
                                 <svg id="micIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
                                     <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -105,11 +117,13 @@
                             <input
                                 type="text"
                                 id="messageInput"
-                                placeholder="Escribe un mensaje aquí..."
+                                placeholder="Escribe un mensaje..."
                                 maxlength="1000"
                                 autocomplete="off"
                             >
-                            <button id="sendBox">Enviar</button>
+                            <button id="sendBox">
+                                Enviar
+                            </button>
                         </div>
 
                         <div id="remoteAudios" style="display: none;"></div>
@@ -119,7 +133,7 @@
                     <div class="sidebar-panel">
 
                         <div id="participantsOverlay" class="participants-section hidden">
-                            <h3>Conectados</h3>
+                            <h3>Participantes</h3>
                             <ul id="participantsList">
                                 <li>Cargando...</li>
                             </ul>
@@ -137,7 +151,7 @@
 
                             <div class="share-meta-box">
                                 <input type="text" id="shareLink" readonly placeholder="Enlace de la sala">
-                                <button id="copyLink">Copiar Enlace</button>
+                                <button id="copyLink">Copiar enlace</button>
                             </div>
 
                             <div class="status-meta">
@@ -145,11 +159,13 @@
                                     <svg id="signalIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M2 20h.01M7 20v-4M12 20v-8M17 20v-12M22 20v-4" />
                                     </svg>
-                                    <span id="connectionStatus">Online</span>
+                                    <span id="connectionStatus">Conectado</span>
                                 </div>
                             </div>
 
-                            <button id="destroyRoom" class="danger">Destruir Sala</button>
+                            <button id="destroyRoom" class="danger">
+                                Destruir sala
+                            </button>
 
                         </div>
 
@@ -163,28 +179,29 @@
     </div>
 
     <footer class="app-footer">
-        <p><a href="https://github.com/coffeetron832/dullchat" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;"><strong>dullchat</strong></a> v1.0.0</p>
-        <p>&copy; 2026 | jahp. Todos los derechos reservados. | <a href="#" class="disclaimer" id="openDisclaimer" style="text-decoration: underline; color: inherit; cursor: pointer;">Términos y Privacidad</a></p>
-            
-        <!-- Modal de Privacidad -->
-        <div id="legalModal" class="modal-overlay hidden">
-            <div class="modal-card">
-                <div class="modal-header">
-                    <h2>Términos y Privacidad</h2>
-                    <button id="closeModalBtn" class="modal-close-x" aria-label="Cerrar modal">&times;</button>
-                </div>
-                <div class="modal-body" id="legalModalContent"></div>
-                <div class="modal-footer">
-                    <button id="acceptModalBtn">Entendido</button>
-                </div>
+    <p><a href="https://github.com/coffeetron832/dullchat" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;"><strong>dullchat</strong></a> v1.0.0</p>
+    <p>&copy; 2026 | jahp. Todos los derechos reservados. | <a href="#" class="disclaimer" style="text-decoration: underline; color: inherit; cursor: pointer;">Términos y Privacidad</a></p>
+        
+    <!-- Modal de Privacidad y Descargo de Responsabilidad -->
+    <div id="legalModal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Aviso de Privacidad y Responsabilidad</h2>
+                <button id="closeModalBtn" class="modal-close-x">&times;</button>
+            </div>
+            <div class="modal-body" id="legalModalContent">
+                <!-- El texto se inyectará dinámicamente con JS -->
+            </div>
+            <div class="modal-footer">
+                <button id="acceptModalBtn">Entendido</button>
             </div>
         </div>
-    </footer>
+    </div>
+</footer>
     
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/picmo@5.8.5/dist/umd/index.js"></script>
-
-    <!-- Script de UI Interno -->
+    
     <script>
         const wrapper = document.getElementById('emojiPickerWrapper');
         let picker;
@@ -206,7 +223,9 @@
 
         document.getElementById('emojiBtn').addEventListener('click', (e) => {
             e.stopPropagation();
-            if (wrapper) wrapper.classList.toggle('hidden');
+            if (wrapper) {
+                wrapper.classList.toggle('hidden');
+            }
         });
 
         document.addEventListener('click', (e) => {
@@ -215,6 +234,7 @@
             }
         });
 
+        // NUEVO: Lógica básica de toggle para los botones independientes de la barra lateral
         const btnPart = document.getElementById('toggleParticipants');
         const btnMeta = document.getElementById('toggleMeta');
         const overlayPart = document.getElementById('participantsOverlay');
@@ -223,15 +243,16 @@
         btnPart.addEventListener('click', (e) => {
             e.stopPropagation();
             overlayPart.classList.toggle('hidden');
-            overlayMeta.classList.add('hidden');
+            overlayMeta.classList.add('hidden'); // Cierra el otro por comodidad
         });
 
         btnMeta.addEventListener('click', (e) => {
             e.stopPropagation();
             overlayMeta.classList.toggle('hidden');
-            overlayPart.classList.add('hidden');
+            overlayPart.classList.add('hidden'); // Cierra el otro por comodidad
         });
 
+        // Ocultar los páneles flotantes al hacer click fuera en el chat
         document.addEventListener('click', (e) => {
             if (overlayPart && !overlayPart.contains(e.target) && !btnPart.contains(e.target)) {
                 overlayPart.classList.add('hidden');
@@ -242,7 +263,7 @@
         });
     </script>
 
-    <script type="module" src="app.js"></script>
+    <script src="app.js"></script>
 
 </body>
 </html>
