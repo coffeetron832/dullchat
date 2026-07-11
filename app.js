@@ -138,7 +138,7 @@ function playBitSound(type) {
 
     if (type === "join") {
         osc.frequency.setValueAtTime(523.25, now); 
-        osc.frequency.setValueAtTime(659.25, now + 0.08, now + 0.08); 
+        osc.frequency.setValueAtTime(659.25, now + 0.08); 
         gainNode.gain.setValueAtTime(0.1, now);
         gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
         osc.start(now);
@@ -260,8 +260,8 @@ function updateParticipantsUI() {
 
     connections.forEach(conn => {
         const li = document.createElement("li");
-        // PRIORIDAD: Mostrar el ID legible obtenido en los metadatos de señalización
-        li.textContent = conn.customUserId || conn.peer;
+        // PRIORIDAD: Mostrar el ID legible (dXXXX) resuelto dinámicamente
+        li.textContent = conn.customUserId || "Conectando...";
         participantsListEl.appendChild(li);
     });
 
@@ -288,13 +288,15 @@ function updateConnectionStatusUI(status) {
 // ==========================================================================
 // INICIALIZACIÓN Y CONTROL DE PEERJS
 // ==========================================================================
-function initPeer(userId, isHost, targetRoomId = null) {
-    peer = new Peer(userId, {
+function initPeer(peerId, isHost, targetRoomId = null) {
+    // El anfitrión usa el ID de la sala como endpoint de señalización WebRTC. 
+    // El invitado usa su propio ID dXXXX aleatorio.
+    peer = new Peer(peerId, {
         debug: 1 
     });
 
     peer.on('open', (id) => {
-        console.log('Mi ID de PeerJS es: ' + id);
+        console.log('Mi ID de red/señalización en PeerJS es: ' + id);
         updateConnectionStatusUI('online'); 
         
         if (!isHost && targetRoomId) {
@@ -369,7 +371,7 @@ function initPeer(userId, isHost, targetRoomId = null) {
 }
 
 function connectToPeer(targetId) {
-    // CORRECCIÓN: El Invitado envía su ID real de usuario en los metadatos de conexión al Host
+    // El Invitado inyecta de forma segura su ID legible dXXXX dentro de los metadatos iniciales
     const conn = peer.connect(targetId, {
         metadata: { userId: userIdEl.textContent }
     });
@@ -378,33 +380,33 @@ function connectToPeer(targetId) {
 
 function setupConnectionTrack(conn) {
     conn.on('open', () => {
-        // CORRECCIÓN: Evaluamos el verdadero ID de la contraparte
-        let remoteUserId = conn.peer;
+        if (roleEl.textContent === "Anfitrión") {
+            // El Anfitrión lee el ID dXXXX enviado por el Invitado en los metadatos
+            conn.customUserId = (conn.metadata && conn.metadata.userId) ? conn.metadata.userId : conn.peer;
+            
+            console.log("Conectado con éxito al invitado: " + conn.customUserId);
+            
+            // PROTOCOLO DE HANDSHAKE: El Anfitrión le responde de inmediato al invitado transmitiéndole su ID dXXXX real
+            setTimeout(() => {
+                conn.send({ type: "HOST_IDENTITY", userId: userIdEl.textContent });
+            }, 400);
 
-        if (conn.metadata && conn.metadata.userId) {
-            // Si eres el Host, extraes el ID del invitado desde sus metadatos
-            remoteUserId = conn.metadata.userId;
-        } else if (conn.peer === roomIdEl.textContent) {
-            // Si eres el Invitado y el ID del peer es igual al ID de la sala, te conectaste al Host
-            remoteUserId = `Host-${conn.peer}`;
+            appendMessage("Sistema", `Usuario ${conn.customUserId} se ha unido.`, "system");
+            playBitSound("join");
+        } else {
+            // El Invitado sabe provisionalmente que se conectó con el endpoint de la sala, esperará el ID real
+            conn.customUserId = "Anfitrión (Verificando...)";
+            console.log("Canal abierto con el nodo central de la sala. Esperando identidad...");
+            
+            if (roomSection.classList.contains("hidden")) {
+                brandHeader.classList.add("hidden");
+                homeSection.classList.add("hidden");
+                roomSection.classList.remove("hidden");
+            }
         }
 
-        // Asignamos el ID limpio al objeto de la conexión de forma dinámica
-        conn.customUserId = remoteUserId;
-
-        console.log("Conectado con éxito a: " + remoteUserId);
         connections.push(conn);
-        
-        if (roleEl.textContent === "Invitado" && roomSection.classList.contains("hidden")) {
-            brandHeader.classList.add("hidden");
-            homeSection.classList.add("hidden");
-            roomSection.classList.remove("hidden");
-        }
-        
         updateParticipantsUI();
-        appendMessage("Sistema", `Usuario ${remoteUserId} se ha unido.`, "system");
-        
-        playBitSound("join");
 
         if (localStream) {
             const call = peer.call(conn.peer, localStream);
@@ -413,6 +415,16 @@ function setupConnectionTrack(conn) {
     });
 
     conn.on('data', async (data) => {
+        // Interceptamos mensaje de control interno del Handshake de Identidad
+        if (data.type === "HOST_IDENTITY") {
+            const ancientId = conn.customUserId;
+            conn.customUserId = data.userId; // Reemplazamos por el ID dXXXX legible del Host
+            updateParticipantsUI();
+            appendMessage("Sistema", `Te has unido a la sala del usuario ${conn.customUserId}.`, "system");
+            playBitSound("join");
+            return;
+        }
+
         if (data.type === "ROOM_DESTROYED") {
             playBitSound("error");
             handleRoomDestructionByHost("El anfitrión ha cerrado esta sala. Redirigiendo al inicio...");
@@ -430,7 +442,6 @@ function setupConnectionTrack(conn) {
     });
 
     conn.on('close', () => {
-        // CORRECCIÓN: Usamos el ID limpio para reportar la salida en consola y UI
         const remoteUserId = conn.customUserId || conn.peer;
         console.log("Conexión cerrada con: " + remoteUserId);
         connections = connections.filter(c => c.peer !== conn.peer);
@@ -657,12 +668,12 @@ function appendMessage(sender, text, type) {
 createRoomBtn.addEventListener("click", async () => {
     const capacity = document.getElementById("capacity").value;
     const roomId = generateRoomId();
-    const userId = `Host-${roomId}`; // Ajustado para que concuerde visualmente con el ID de la sala
+    const myCleanId = generateUserId(); // El Anfitrión ahora adopta un ID dXXXX limpio e indescifrable
 
     const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
 
     roomIdEl.textContent = roomId;
-    userIdEl.textContent = userId;
+    userIdEl.textContent = myCleanId; // Se imprime en pantalla su dXXXX
     roomCapacityEl.textContent = capacity;
     roleEl.textContent = "Anfitrión"; 
     shareLinkEl.value = link;
@@ -678,6 +689,8 @@ createRoomBtn.addEventListener("click", async () => {
     updateParticipantsUI();
     
     await deriveKeyFromRoomId(roomId);
+    
+    // Inicializamos con el ID de la sala para que actúe de receptor de conexiones entrantes de señalización.
     initPeer(roomId, true);
 });
 
