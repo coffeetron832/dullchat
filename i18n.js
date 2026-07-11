@@ -2,6 +2,10 @@
 
 export const translations = {
     es: {
+        // Nuevas claves añadidas para resolver el problema de strings sin procesar
+        appSubtitle: "Un espacio minimalista, seguro y sin rastro.",
+        roomCapacityLabel: "Capacidad de la sala:",
+
         createRoom: "Crear Sala",
         destroyRoom: "Destruir sala",
         leaveRoom: "Abandonar sala",
@@ -62,6 +66,10 @@ export const translations = {
         `
     },
     en: {
+        // Nuevas claves añadidas para resolver el problema de strings sin procesar
+        appSubtitle: "A minimalist, secure, and traceless space.",
+        roomCapacityLabel: "Room capacity:",
+
         createRoom: "Create Room",
         destroyRoom: "Destroy room",
         leaveRoom: "Leave room",
@@ -117,7 +125,7 @@ export const translations = {
             <p>Due to the decentralized architecture of the application, developers cannot intercept, audit, moderate, or block content in any room.</p>
             <ul>
                 <li>The user is solely and exclusively responsible for any information shared during sessions.</li>
-                <li>We assume no legal liability for improper, unlawful, defamatory, or fraudulent uses of the service.</li>
+                <li> We assume no legal liability for improper, unlawful, defamatory, or fraudulent uses of the service.</li>
             </ul>
         `
     }
