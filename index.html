@@ -39,15 +39,24 @@
         <div class="container">
 
             <div id="brand-header">
-                <h1>dullchat</h1>
-                <p class="subtitle">
+                <div class="header-top" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h1>dullchat</h1>
+                    <!-- Selector de Idiomas -->
+                    <div class="language-picker">
+                        <select id="langSelect" style="padding: 4px 8px; border-radius: 4px; cursor: pointer;">
+                            <option value="es">ES</option>
+                            <option value="en">EN</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="subtitle" data-i18n="header.subtitle">
                     Crea salas privadas en un clic. Comunicación directa entre usuarios, lo que se habla aquí, se queda aquí.
                 </p>
             </div>
 
             <div id="home">
 
-                <label for="capacity">
+                <label for="capacity" data-i18n="home.capacityLabel">
                     Capacidad de integrantes en la sala
                 </label>
 
@@ -58,7 +67,7 @@
                     <option value="50">50</option>
                 </select>
 
-                <button id="createRoom">
+                <button id="createRoom" data-i18n="home.createBtn">
                     Crear sala
                 </button>
 
@@ -89,9 +98,7 @@
                     <div class="chat-container" style="position: relative;">
 
                         <div id="messages">
-                            <div class="message system">
-                                <strong>Sistema:</strong> Bienvenido a DullChat.
-                            </div>
+                            <!-- Nota: El mensaje de bienvenida inicial del sistema se gestionará dinámicamente desde app.js usando las claves de i18n -->
                         </div>
 
                         <div id="emojiPickerWrapper" class="hidden"></div>
@@ -117,11 +124,12 @@
                             <input
                                 type="text"
                                 id="messageInput"
+                                data-i18n-placeholder="room.placeholder"
                                 placeholder="Escribe un mensaje..."
                                 maxlength="1000"
                                 autocomplete="off"
                             >
-                            <button id="sendBox">
+                            <button id="sendBox" data-i18n="room.sendBtn">
                                 Enviar
                             </button>
                         </div>
@@ -133,25 +141,25 @@
                     <div class="sidebar-panel">
 
                         <div id="participantsOverlay" class="participants-section hidden">
-                            <h3>Participantes</h3>
+                            <h3 data-i18n="room.participantsTitle">Participantes</h3>
                             <ul id="participantsList">
-                                <li>Cargando...</li>
+                                <li data-i18n="room.loading">Cargando...</li>
                             </ul>
                         </div>
 
                         <div id="metaOverlay" class="room-meta-section hidden">
                             
                             <div class="info-meta">
-                                <p><strong>Sala:</strong> <span id="roomId">-</span></p>
-                                <p><strong>Tu ID:</strong> <span id="userId">-</span></p>
-                                <p><strong>Rol:</strong> <span id="role">-</span></p>
-                                <p><strong>Capacidad:</strong> <span id="roomCapacity">-</span></p>
-                                <p><strong>Conectados:</strong> <span id="connectedCount">1</span></p>
+                                <p><strong data-i18n="room.metaRoom">Sala:</strong> <span id="roomId">-</span></p>
+                                <p><strong data-i18n="room.metaYourId">Tu ID:</strong> <span id="userId">-</span></p>
+                                <p><strong data-i18n="room.metaRole">Rol:</strong> <span id="role">-</span></p>
+                                <p><strong data-i18n="room.metaCapacity">Capacidad:</strong> <span id="roomCapacity">-</span></p>
+                                <p><strong data-i18n="room.metaConnected">Conectados:</strong> <span id="connectedCount">1</span></p>
                             </div>
 
                             <div class="share-meta-box">
-                                <input type="text" id="shareLink" readonly placeholder="Enlace de la sala">
-                                <button id="copyLink">Copiar enlace</button>
+                                <input type="text" id="shareLink" readonly data-i18n-placeholder="room.linkPlaceholder" placeholder="Enlace de la sala">
+                                <button id="copyLink" data-i18n="room.copyBtn">Copiar enlace</button>
                             </div>
 
                             <div class="status-meta">
@@ -159,11 +167,11 @@
                                     <svg id="signalIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M2 20h.01M7 20v-4M12 20v-8M17 20v-12M22 20v-4" />
                                     </svg>
-                                    <span id="connectionStatus">Conectado</span>
+                                    <span id="connectionStatus" data-i18n="room.statusConnected">Conectado</span>
                                 </div>
                             </div>
 
-                            <button id="destroyRoom" class="danger">
+                            <button id="destroyRoom" class="danger" data-i18n="room.destroyBtn">
                                 Destruir sala
                             </button>
 
@@ -179,29 +187,34 @@
     </div>
 
     <footer class="app-footer">
-    <p><a href="https://github.com/coffeetron832/dullchat" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;"><strong>dullchat</strong></a> v1.0.0</p>
-    <p>&copy; 2026 | jahp. Todos los derechos reservados. | <a href="#" class="disclaimer" style="text-decoration: underline; color: inherit; cursor: pointer;">Términos y Privacidad</a></p>
-        
-    <!-- Modal de Privacidad y Descargo de Responsabilidad -->
-    <div id="legalModal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h2>Aviso de Privacidad y Responsabilidad</h2>
-                <button id="closeModalBtn" class="modal-close-x">&times;</button>
-            </div>
-            <div class="modal-body" id="legalModalContent">
-                <!-- El texto se inyectará dinámicamente con JS -->
-            </div>
-            <div class="modal-footer">
-                <button id="acceptModalBtn">Entendido</button>
+        <p><a href="https://github.com/coffeetron832/dullchat" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;"><strong>dullchat</strong></a> v1.0.0</p>
+        <p>&copy; 2026 | jahp. Todos los derechos reservados. | <a href="#" class="disclaimer" id="openDisclaimer" style="text-decoration: underline; color: inherit; cursor: pointer;" data-i18n="footer.terms">Términos y Privacidad</a></p>
+            
+        <!-- Modal de Privacidad y Descargo de Responsabilidad -->
+        <div id="legalModal" class="modal-overlay hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2 data-i18n="modal.title">Aviso de Privacidad y Responsabilidad</h2>
+                    <button id="closeModalBtn" class="modal-close-x">&times;</button>
+                </div>
+                <div class="modal-body" id="legalModalContent">
+                    <!-- El texto se inyectará dinámicamente con JS -->
+                </div>
+                <div class="modal-footer">
+                    <button id="acceptModalBtn" data-i18n="modal.acceptBtn">Entendido</button>
+                </div>
             </div>
         </div>
-    </div>
-</footer>
+    </footer>
     
+    <!-- Dependencias de Terceros -->
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/picmo@5.8.5/dist/umd/index.js"></script>
     
+    <!-- i18n Sistema de Traducción -->
+    <script src="i18n.js"></script>
+
+    <!-- Lógica de la Interfaz del UI local -->
     <script>
         const wrapper = document.getElementById('emojiPickerWrapper');
         let picker;
@@ -234,7 +247,6 @@
             }
         });
 
-        // NUEVO: Lógica básica de toggle para los botones independientes de la barra lateral
         const btnPart = document.getElementById('toggleParticipants');
         const btnMeta = document.getElementById('toggleMeta');
         const overlayPart = document.getElementById('participantsOverlay');
@@ -243,16 +255,15 @@
         btnPart.addEventListener('click', (e) => {
             e.stopPropagation();
             overlayPart.classList.toggle('hidden');
-            overlayMeta.classList.add('hidden'); // Cierra el otro por comodidad
+            overlayMeta.classList.add('hidden');
         });
 
         btnMeta.addEventListener('click', (e) => {
             e.stopPropagation();
             overlayMeta.classList.toggle('hidden');
-            overlayPart.classList.add('hidden'); // Cierra el otro por comodidad
+            overlayPart.classList.add('hidden');
         });
 
-        // Ocultar los páneles flotantes al hacer click fuera en el chat
         document.addEventListener('click', (e) => {
             if (overlayPart && !overlayPart.contains(e.target) && !btnPart.contains(e.target)) {
                 overlayPart.classList.add('hidden');
@@ -263,6 +274,7 @@
         });
     </script>
 
+    <!-- Lógica Central de la Aplicación -->
     <script src="app.js"></script>
 
 </body>
