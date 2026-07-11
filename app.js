@@ -1,32 +1,4 @@
 // ==========================================================================
-// CONFIGURACIÓN E INTERFAZ DE USUARIO
-// ==========================================================================
-
-// Función auxiliar para actualizar elementos dinámicos
-function renderDynamicUI() {
-    updateParticipantsUI();
-    
-    const isHost = roleEl.dataset.role === "host";
-    const isGuest = roleEl.dataset.role === "guest";
-    
-    if (isHost || isGuest) {
-        roleEl.textContent = isHost ? "Anfitrión" : "Invitado";
-        destroyRoomBtn.textContent = isHost ? "Destruir sala" : "Abandonar sala";
-    } else {
-        roleEl.textContent = "-";
-    }
-
-    if (isGuest && (roomCapacityEl.textContent === "N/A" || roomCapacityEl.textContent === "Not Available")) {
-        roomCapacityEl.textContent = "N/A";
-    }
-
-    // Forzar actualización del estado de la señal
-    if (signalIconEl.classList.contains('signal-online')) updateConnectionStatusUI('online');
-    if (signalIconEl.classList.contains('signal-connecting')) updateConnectionStatusUI('connecting');
-    if (signalIconEl.classList.contains('signal-offline')) updateConnectionStatusUI('offline');
-}
-
-// ==========================================================================
 // SELECCIÓN DE ELEMENTOS DEL DOM
 // ==========================================================================
 const createRoomBtn = document.getElementById("createRoom");
@@ -115,6 +87,34 @@ document.head.appendChild(style);
 // ==========================================================================
 // MANEJO DEL MODAL DE DESCARGO DE RESPONSABILIDAD (PRIVACIDAD)
 // ==========================================================================
+const legalText = `
+    <p><strong>dullchat</strong> es una plataforma experimental de mensajería instantánea distribuida y serverless diseñada bajo principios de privacidad absoluta.</p>
+    
+    <h3>1. Naturaleza del Servicio y Cifrado</h3>
+    <p>Toda la comunicación entre dispositivos se realiza mediante cifrado de extremo a extremo (E2EE).</p>
+    <ul>
+        <li><strong>Sin almacenamiento central:</strong> Los mensajes, archivos, credenciales y metadatos se procesan estrictamente de manera local en tu navegador y se transmiten directamente de par a par (P2P).</li>
+        <li>No mantenemos servidores de bases de datos ni respaldos. Una vez cerrada la sala o la pestaña, los datos se eliminan de forma permanente e irrecuperable.</li>
+    </ul>
+
+    <h3>2. Exclusión de Responsabilidad por Contenido</h3>
+    <p>Debido a la arquitectura técnica descentralizada de la aplicación, los desarrolladores no tienen la capacidad de interceptar, auditar, moderar ni bloquear el contenido de ninguna sala.</p>
+    <ul>
+        <li>El usuario es el único y exclusivo responsable de la información compartida durante las sesiones.</li>
+        <li>No asumimos responsabilidad legal alguna por usos inapropiados, ilícitos, difamatorios o fraudulentos del servicio.</li>
+    </ul>
+
+    <h3>3. Gestión de Enlaces y Claves de Acceso</h3>
+    <p>Los identificadores de las salas de chat actúan como llaves criptográficas generadas localmente.</p>
+    <ul>
+        <li>Es tu estricta responsabilidad custodiar estos enlaces y compartirlos únicamente con destinatarios autorizados.</li>
+        <li>Si un tercero accede a tu enlace, podrá unirse a la sala. El sistema no provee herramientas centralizadas para la revocación remota de accesos ni recuperación de salas perdidas.</li>
+    </ul>
+
+    <h3>4. Exclusión de Garantías Técnicas</h3>
+    <p>El software se entrega "tal cual" (As Is), sin garantías de disponibilidad permanente o inmunidad ante fallas de red asociadas a los navegadores o proxies de conexión WebRTC/STUN de terceros.</p>
+`;
+
 function initPrivacyModal() {
     const disclaimerBtn = document.querySelector('.disclaimer');
     const modal = document.getElementById('legalModal');
@@ -125,9 +125,7 @@ function initPrivacyModal() {
     if (disclaimerBtn && modal) {
         disclaimerBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            if (modalContent) {
-                modalContent.innerHTML = `<p><strong>dullchat</strong> es una plataforma experimental...</p>`;
-            }
+            modalContent.innerHTML = legalText;
             modal.classList.remove('hidden');
         });
     }
@@ -272,25 +270,20 @@ function generateRoomId() {
 }
 
 // ==========================================================================
-// INTERFAZ DE USUARIO Y SEÑALIZACIÓN P2P
+// INTERFAZ DE USUARIO Y SEÑALIZACIÓN P2P (DIBUJO ASIMÉTRICO ALINEADO)
 // ==========================================================================
 function updateParticipantsUI() {
     participantsListEl.innerHTML = "";
 
     // Nodo del usuario propio
-    if (userIdEl.textContent) {
-        const myLi = document.createElement("li");
-        const strongEl = document.createElement("strong");
-        strongEl.textContent = userIdEl.textContent;
-        myLi.appendChild(strongEl);
-        myLi.appendChild(document.createTextNode(" (Tú)"));
-        participantsListEl.appendChild(myLi);
-    } else {
-        participantsListEl.innerHTML = `<li>Cargando...</li>`;
-        return;
-    }
+    const myLi = document.createElement("li");
+    const strongEl = document.createElement("strong");
+    strongEl.textContent = userIdEl.textContent;
+    myLi.appendChild(strongEl);
+    myLi.appendChild(document.createTextNode(" (Tú)"));
+    participantsListEl.appendChild(myLi);
 
-    const isHost = roleEl.dataset.role === "host";
+    const isHost = (roleEl.textContent === "Anfitrión");
 
     connections.forEach(conn => {
         const li = document.createElement("li");
@@ -301,6 +294,7 @@ function updateParticipantsUI() {
             nameSpan.textContent = readableId;
             li.appendChild(nameSpan);
 
+            // Contenedor para agrupar los botones alineados a la derecha
             const btnGroup = document.createElement("div");
 
             const isPeerMuted = mutedPeersByHost.has(conn.peer);
@@ -362,7 +356,9 @@ function updateConnectionStatusUI(status) {
 // INICIALIZACIÓN Y CONTROL DE PEERJS
 // ==========================================================================
 function initPeer(peerId, isHost, targetRoomId = null) {
-    peer = new Peer(peerId, { debug: 1 });
+    peer = new Peer(peerId, {
+        debug: 1 
+    });
 
     peer.on('open', (id) => {
         console.log('Mi ID de red/señalización en PeerJS es: ' + id);
@@ -388,7 +384,9 @@ function initPeer(peerId, isHost, targetRoomId = null) {
     });
 
     peer.on('disconnected', () => {
+        console.log('Conexión parpadeante con la señalización. Intentando recuperar la sesión...');
         updateConnectionStatusUI('connecting'); 
+        
         if (isRoomActive && !peer.destroyed) {
             peer.reconnect();
         }
@@ -398,7 +396,9 @@ function initPeer(peerId, isHost, targetRoomId = null) {
         console.error('Error detectado en PeerJS:', err.type, err);
         
         if (err.type === 'network' || err.type === 'disconnect') {
+            console.log('Detectada inestabilidad de red. Esperando estabilización...');
             updateConnectionStatusUI('connecting'); 
+            
             setTimeout(() => {
                 if (peer && peer.disconnected && !peer.destroyed && isRoomActive) {
                     peer.reconnect();
@@ -444,20 +444,19 @@ function connectToPeer(targetId) {
 
 function setupConnectionTrack(conn) {
     conn.on('open', () => {
-        const isHost = roleEl.dataset.role === "host";
-        if (isHost) {
+        if (roleEl.textContent === "Anfitrión") {
             conn.customUserId = (conn.metadata && conn.metadata.userId) ? conn.metadata.userId : conn.peer;
+            console.log("Conectado con éxito al invitado: " + conn.customUserId);
             
             setTimeout(() => {
                 conn.send({ type: "HOST_IDENTITY", userId: userIdEl.textContent });
             }, 400);
 
-            const systemSender = "Sistema";
-            const userJoinedMsg = `Usuario ${conn.customUserId} se ha unido.`;
-            appendMessage(systemSender, userJoinedMsg, "system");
+            appendMessage("Sistema", `Usuario ${conn.customUserId} se ha unido.`, "system");
             playBitSound("join");
         } else {
             conn.customUserId = "Anfitrión (Verificando...)";
+            console.log("Canal abierto con el nodo central de la sala. Esperando identidad...");
             
             if (roomSection.classList.contains("hidden")) {
                 brandHeader.classList.add("hidden");
@@ -476,13 +475,11 @@ function setupConnectionTrack(conn) {
     });
 
     conn.on('data', async (data) => {
+        // --- INTERCEPCIÓN DE PAQUETES DE CONTROL INTERNO ---
         if (data.type === "HOST_IDENTITY") {
             conn.customUserId = data.userId; 
             updateParticipantsUI();
-            
-            const systemSender = "Sistema";
-            const joinedMsg = `Te has unido a la sala del usuario ${conn.customUserId}.`;
-            appendMessage(systemSender, joinedMsg, "system");
+            appendMessage("Sistema", `Te has unido a la sala del usuario ${conn.customUserId}.`, "system");
             playBitSound("join");
             return;
         }
@@ -493,6 +490,7 @@ function setupConnectionTrack(conn) {
             return;
         }
 
+        // Lógica de moderación forzada remota (El Invitado intercepta)
         if (data.type === "FORCE_MUTE") {
             isMuted = true;
             if (localStream) {
@@ -517,32 +515,33 @@ function setupConnectionTrack(conn) {
             isRoomActive = false;
             updateConnectionStatusUI('offline');
             alert("Has sido expulsado de la sala por el anfitrión.");
-            if (peer) peer.destroy(); 
+            if (peer) {
+                peer.destroy(); 
+            }
             resetAppToHome();
             return;
         }
 
+        // --- MANEJO DE MENSAJES DE TEXTO STANDARDS ---
         const decryptedText = await decryptMessage(data.text);
         appendMessage(data.sender, decryptedText, "received");
         playBitSound("message");
         
-        if (roleEl.dataset.role === "host") {
+        if (roleEl.textContent === "Anfitrión") {
             broadcastMessage(data, conn.peer);
         }
     });
 
     conn.on('close', () => {
         const remoteUserId = conn.customUserId || conn.peer;
+        console.log("Conexión cerrada con: " + remoteUserId);
         connections = connections.filter(c => c.peer !== conn.peer);
         mutedPeersByHost.delete(conn.peer);
         
         updateParticipantsUI();
-        
-        const systemSender = "Sistema";
-        const leftMsg = `Usuario ${remoteUserId} ha salido.`;
-        appendMessage(systemSender, leftMsg, "system");
+        appendMessage("Sistema", `Usuario ${remoteUserId} ha salido.`, "system");
 
-        if (roleEl.dataset.role === "guest" && connections.length === 0 && isRoomActive) {
+        if (roleEl.textContent === "Invitado" && connections.length === 0 && isRoomActive) {
             playBitSound("error");
             handleRoomDestructionByHost("Se perdió la conexión con el anfitrión. La sala ya no está disponible.");
         }
@@ -570,6 +569,9 @@ function handleIncomingCall(call) {
     });
 }
 
+// ==========================================================================
+// CAPTURA MULTIMEDIA Y VU METER
+// ==========================================================================
 async function initLocalAudio() {
     try {
         if (audioCtx.state === 'suspended') {
@@ -614,9 +616,6 @@ async function initLocalAudio() {
     }
 }
 
-// ==========================================================================
-// VU METER Y CONTROLES MULTIMEDIA
-// ==========================================================================
 function renderVuMeter() {
     if (isMuted || !audioAnalyser) {
         vuBars.forEach(bar => { if (bar) bar.classList.remove("lit"); });
@@ -648,6 +647,9 @@ function renderVuMeter() {
     vuAnimationId = requestAnimationFrame(renderVuMeter);
 }
 
+// ==========================================================================
+// INTERFAZ DE MICRÓFONO REUTILIZABLE
+// ==========================================================================
 function updateMicUI() {
     if (isMuted) {
         micBtnEl.classList.add("mic-muted");
@@ -687,7 +689,11 @@ function handleRoomDestructionByHost(alertMessage) {
     isRoomActive = false;
     updateConnectionStatusUI('offline');
     alert(alertMessage);
-    if (peer) peer.destroy();
+    
+    if (peer) {
+        peer.destroy();
+    }
+    
     resetAppToHome();
 }
 
@@ -696,9 +702,9 @@ function resetAppToHome() {
     userIdEl.textContent = "";
     roomCapacityEl.textContent = "";
     roleEl.textContent = "-";
-    roleEl.removeAttribute('data-role');
     shareLinkEl.value = "";
     messagesContainer.innerHTML = ""; 
+    participantsListEl.innerHTML = "<li>Cargando...</li>";
     cryptoKey = null; 
     mutedPeersByHost.clear();
 
@@ -721,7 +727,6 @@ function resetAppToHome() {
     homeSection.classList.remove("hidden");
     brandHeader.classList.remove("hidden");
 
-    updateParticipantsUI();
     window.history.pushState({}, document.title, window.location.pathname);
 }
 
@@ -757,16 +762,13 @@ createRoomBtn.addEventListener("click", async () => {
     const capacity = document.getElementById("capacity").value;
     const roomId = generateRoomId();
     const myCleanId = generateUserId(); 
+
     const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
 
     roomIdEl.textContent = roomId;
     userIdEl.textContent = myCleanId; 
     roomCapacityEl.textContent = capacity;
-    
-    // Guardamos estado invariante en el DOM
-    roleEl.dataset.role = "host";
     roleEl.textContent = "Anfitrión"; 
-    
     shareLinkEl.value = link;
     
     destroyRoomBtn.textContent = "Destruir sala";
@@ -817,7 +819,7 @@ copyLinkBtn.addEventListener("click", async () => {
 });
 
 destroyRoomBtn.addEventListener("click", () => {
-    if (roleEl.dataset.role === "host") {
+    if (roleEl.textContent === "Anfitrión") {
         const confirmDelete = confirm("Esta acción eliminará la sala permanentemente para todos.");
         if (!confirmDelete) return;
 
@@ -855,10 +857,7 @@ window.addEventListener("DOMContentLoaded", () => {
         
         roomIdEl.textContent = roomParam;
         userIdEl.textContent = myUserId;
-        
         roomCapacityEl.textContent = "N/A"; 
-        
-        roleEl.dataset.role = "guest";
         roleEl.textContent = "Invitado";      
         shareLinkEl.value = window.location.href;
 
@@ -871,7 +870,5 @@ window.addEventListener("DOMContentLoaded", () => {
         deriveKeyFromRoomId(roomParam).then(() => {
             initPeer(myUserId, false, roomParam);
         });
-    } else {
-        updateParticipantsUI();
     }
 });
