@@ -92,7 +92,7 @@ function setLanguage(lang) {
     localStorage.setItem('dullchat_lang', lang);
     
     // Cambiar atributo lang en la raíz del documento
-    document.getElementById('html-root').setAttribute('lang', lang);
+    document.documentElement.setAttribute('lang', lang);
     
     // Asegurar que el select refleje el idioma actual
     document.getElementById('langSelect').value = lang;
