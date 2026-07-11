@@ -18,11 +18,23 @@ document.getElementById("btnLangEn")?.addEventListener("click", () => {
 // Función auxiliar para actualizar elementos dinámicos que no cubre applyTranslations automáticamente
 function renderDynamicUI() {
     updateParticipantsUI();
-    if (peer) {
-        const isHost = (roleEl.textContent === "Anfitrión" || roleEl.textContent === "Host" || roleEl.dataset.role === "host");
+    
+    const isHost = roleEl.dataset.role === "host";
+    const isGuest = roleEl.dataset.role === "guest";
+    
+    if (isHost || isGuest) {
         roleEl.textContent = isHost ? (t("hostRole") || "Anfitrión") : (t("guestRole") || "Invitado");
         destroyRoomBtn.textContent = isHost ? (t("destroyRoomBtn") || "Destruir sala") : (t("leaveRoomBtn") || "Abandonar sala");
+    } else {
+        roleEl.textContent = "-";
     }
+
+    // Mantener la capacidad de la sala traducida de forma dinámica si no está activa en modo invitado
+    if (isGuest && (roomCapacityEl.textContent === "N/A" || roomCapacityEl.textContent === "Not Available" || roomCapacityEl.dataset.i18n === "notAvailable")) {
+        roomCapacityEl.textContent = t("notAvailable") || "N/A";
+        roomCapacityEl.dataset.i18n = "notAvailable";
+    }
+
     // Forzar actualización del estado de la señal
     if (signalIconEl.classList.contains('signal-online')) updateConnectionStatusUI('online');
     if (signalIconEl.classList.contains('signal-connecting')) updateConnectionStatusUI('connecting');
@@ -215,7 +227,6 @@ async function deriveKeyFromRoomId(roomId) {
     );
 }
 
-// ... [Mantienes funciones estables encryptMessage y decryptMessage sin cambios] ...
 async function encryptMessage(plainText) {
     if (!cryptoKey) return plainText;
     const encoder = new TextEncoder();
@@ -282,14 +293,18 @@ function updateParticipantsUI() {
     participantsListEl.innerHTML = "";
 
     // Nodo del usuario propio
-    const myLi = document.createElement("li");
-    const strongEl = document.createElement("strong");
-    strongEl.textContent = userIdEl.textContent;
-    myLi.appendChild(strongEl);
-    myLi.appendChild(document.createTextNode(` ${t("youLabel") || "(Tú)"}`));
-    participantsListEl.appendChild(myLi);
+    if (userIdEl.textContent) {
+        const myLi = document.createElement("li");
+        const strongEl = document.createElement("strong");
+        strongEl.textContent = userIdEl.textContent;
+        myLi.appendChild(strongEl);
+        myLi.appendChild(document.createTextNode(` ${t("youLabel") || "(Tú)"}`));
+        participantsListEl.appendChild(myLi);
+    } else {
+        participantsListEl.innerHTML = `<li>${t("loadingText") || "Cargando..."}</li>`;
+        return;
+    }
 
-    // Usamos el dataset en lugar de evaluar texto plano traducible
     const isHost = roleEl.dataset.role === "host";
 
     connections.forEach(conn => {
@@ -452,7 +467,9 @@ function setupConnectionTrack(conn) {
                 conn.send({ type: "HOST_IDENTITY", userId: userIdEl.textContent });
             }, 400);
 
-            appendMessage(t("systemSender") || "Sistema", `${t("userJoinedMessage") || "Usuario"} ${conn.customUserId} ${t("userJoinedSuffix") || "se ha unido."}`, "system");
+            const systemSender = t("systemSender") || "Sistema";
+            const userJoinedMsg = `${t("userJoinedMessage") || "Usuario"} ${conn.customUserId} ${t("userJoinedSuffix") || "se ha unido."}`;
+            appendMessage(systemSender, userJoinedMsg, "system");
             playBitSound("join");
         } else {
             conn.customUserId = t("verifyingHost") || "Anfitrión (Verificando...)";
@@ -477,7 +494,10 @@ function setupConnectionTrack(conn) {
         if (data.type === "HOST_IDENTITY") {
             conn.customUserId = data.userId; 
             updateParticipantsUI();
-            appendMessage(t("systemSender") || "Sistema", `${t("joinedToRoomMessage") || "Te has unido a la sala del usuario"} ${conn.customUserId}.`, "system");
+            
+            const systemSender = t("systemSender") || "Sistema";
+            const joinedMsg = `${t("joinedToRoomMessage") || "Te has unido a la sala del usuario"} ${conn.customUserId}.`;
+            appendMessage(systemSender, joinedMsg, "system");
             playBitSound("join");
             return;
         }
@@ -532,7 +552,10 @@ function setupConnectionTrack(conn) {
         mutedPeersByHost.delete(conn.peer);
         
         updateParticipantsUI();
-        appendMessage(t("systemSender") || "Sistema", `${t("userLeftMessage") || "Usuario"} ${remoteUserId} ${t("userLeftSuffix") || "ha salido."}`, "system");
+        
+        const systemSender = t("systemSender") || "Sistema";
+        const leftMsg = `${t("userLeftMessage") || "Usuario"} ${remoteUserId} ${t("userLeftSuffix") || "ha salido."}`;
+        appendMessage(systemSender, leftMsg, "system");
 
         if (roleEl.dataset.role === "guest" && connections.length === 0 && isRoomActive) {
             playBitSound("error");
@@ -541,7 +564,6 @@ function setupConnectionTrack(conn) {
     });
 }
 
-// ... [Mantienes funciones estables handleIncomingCall, initLocalAudio y renderVuMeter sin cambios] ...
 function handleIncomingCall(call) {
     activeCalls.push(call);
 
@@ -685,11 +707,11 @@ function resetAppToHome() {
     roomIdEl.textContent = "";
     userIdEl.textContent = "";
     roomCapacityEl.textContent = "";
+    roomCapacityEl.removeAttribute('data-i18n');
     roleEl.textContent = "-";
     roleEl.removeAttribute('data-role');
     shareLinkEl.value = "";
     messagesContainer.innerHTML = ""; 
-    participantsListEl.innerHTML = `<li>${t("loadingText") || "Cargando..."}</li>`;
     cryptoKey = null; 
     mutedPeersByHost.clear();
 
@@ -712,6 +734,7 @@ function resetAppToHome() {
     homeSection.classList.remove("hidden");
     brandHeader.classList.remove("hidden");
 
+    updateParticipantsUI();
     window.history.pushState({}, document.title, window.location.pathname);
 }
 
@@ -846,7 +869,9 @@ window.addEventListener("DOMContentLoaded", () => {
         
         roomIdEl.textContent = roomParam;
         userIdEl.textContent = myUserId;
+        
         roomCapacityEl.textContent = t("notAvailable") || "N/A"; 
+        roomCapacityEl.dataset.i18n = "notAvailable";
         
         roleEl.dataset.role = "guest";
         roleEl.textContent = t("guestRole") || "Invitado";      
@@ -861,5 +886,8 @@ window.addEventListener("DOMContentLoaded", () => {
         deriveKeyFromRoomId(roomParam).then(() => {
             initPeer(myUserId, false, roomParam);
         });
+    } else {
+        // Asegurar que la UI inicial muestre el estado de carga correcto traducido
+        updateParticipantsUI();
     }
 });
