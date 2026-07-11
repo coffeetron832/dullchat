@@ -1,21 +1,8 @@
 // ==========================================================================
-// IMPORTACIONES E INICIALIZACIÓN DE IDIOMA
+// CONFIGURACIÓN E INTERFAZ DE USUARIO
 // ==========================================================================
-import { t, getLang, setLang, applyTranslations } from './i18n.js';
 
-// Configurar los botones del selector de idioma en el DOM con recarga de interfaz dinámica
-document.getElementById("btnLangEs")?.addEventListener("click", () => { 
-    setLang("es"); 
-    applyTranslations(); 
-    renderDynamicUI(); 
-});
-document.getElementById("btnLangEn")?.addEventListener("click", () => { 
-    setLang("en"); 
-    applyTranslations(); 
-    renderDynamicUI(); 
-});
-
-// Función auxiliar para actualizar elementos dinámicos que no cubre applyTranslations automáticamente
+// Función auxiliar para actualizar elementos dinámicos
 function renderDynamicUI() {
     updateParticipantsUI();
     
@@ -23,16 +10,14 @@ function renderDynamicUI() {
     const isGuest = roleEl.dataset.role === "guest";
     
     if (isHost || isGuest) {
-        roleEl.textContent = isHost ? (t("hostRole") || "Anfitrión") : (t("guestRole") || "Invitado");
-        destroyRoomBtn.textContent = isHost ? (t("destroyRoomBtn") || "Destruir sala") : (t("leaveRoomBtn") || "Abandonar sala");
+        roleEl.textContent = isHost ? "Anfitrión" : "Invitado";
+        destroyRoomBtn.textContent = isHost ? "Destruir sala" : "Abandonar sala";
     } else {
         roleEl.textContent = "-";
     }
 
-    // Mantener la capacidad de la sala traducida de forma dinámica si no está activa en modo invitado
-    if (isGuest && (roomCapacityEl.textContent === "N/A" || roomCapacityEl.textContent === "Not Available" || roomCapacityEl.dataset.i18n === "notAvailable")) {
-        roomCapacityEl.textContent = t("notAvailable") || "N/A";
-        roomCapacityEl.dataset.i18n = "notAvailable";
+    if (isGuest && (roomCapacityEl.textContent === "N/A" || roomCapacityEl.textContent === "Not Available")) {
+        roomCapacityEl.textContent = "N/A";
     }
 
     // Forzar actualización del estado de la señal
@@ -141,7 +126,7 @@ function initPrivacyModal() {
         disclaimerBtn.addEventListener('click', (e) => {
             e.preventDefault();
             if (modalContent) {
-                modalContent.innerHTML = t("legalTextHTML") || `<p><strong>dullchat</strong> es una plataforma experimental...</p>`;
+                modalContent.innerHTML = `<p><strong>dullchat</strong> es una plataforma experimental...</p>`;
             }
             modal.classList.remove('hidden');
         });
@@ -266,7 +251,7 @@ async function decryptMessage(base64Data) {
         return new TextDecoder().decode(decryptedBuffer);
     } catch (err) {
         console.error("Error al descifrar el mensaje:", err);
-        return t("decryptionError") || "[Error: No se pudo descifrar este mensaje. Clave inválida o corrupta]";
+        return "[Error: No se pudo descifrar este mensaje. Clave inválida o corrupta]";
     }
 }
 
@@ -298,10 +283,10 @@ function updateParticipantsUI() {
         const strongEl = document.createElement("strong");
         strongEl.textContent = userIdEl.textContent;
         myLi.appendChild(strongEl);
-        myLi.appendChild(document.createTextNode(` ${t("youLabel") || "(Tú)"}`));
+        myLi.appendChild(document.createTextNode(" (Tú)"));
         participantsListEl.appendChild(myLi);
     } else {
-        participantsListEl.innerHTML = `<li>${t("loadingText") || "Cargando..."}</li>`;
+        participantsListEl.innerHTML = `<li>Cargando...</li>`;
         return;
     }
 
@@ -309,7 +294,7 @@ function updateParticipantsUI() {
 
     connections.forEach(conn => {
         const li = document.createElement("li");
-        const readableId = conn.customUserId || t("connectingStatus") || "Conectando...";
+        const readableId = conn.customUserId || "Conectando...";
         
         if (isHost && conn.customUserId) {
             const nameSpan = document.createElement("span");
@@ -320,7 +305,7 @@ function updateParticipantsUI() {
 
             const isPeerMuted = mutedPeersByHost.has(conn.peer);
             const muteBtn = document.createElement("button");
-            muteBtn.textContent = isPeerMuted ? (t("unmuteBtn") || "Reactivar") : (t("muteBtn") || "Silenciar");
+            muteBtn.textContent = isPeerMuted ? "Reactivar" : "Silenciar";
             muteBtn.classList.add("btn-mod-small");
             if (isPeerMuted) muteBtn.style.backgroundColor = "#4a4a4a";
 
@@ -336,7 +321,7 @@ function updateParticipantsUI() {
             });
 
             const kickBtn = document.createElement("button");
-            kickBtn.textContent = t("kickBtn") || "Expulsar";
+            kickBtn.textContent = "Expulsar";
             kickBtn.classList.add("btn-mod-small", "danger");
             kickBtn.addEventListener("click", () => {
                 conn.send({ type: "FORCE_KICK" });
@@ -363,13 +348,13 @@ function updateConnectionStatusUI(status) {
     
     if (status === 'online') {
         signalIconEl.classList.add('signal-online');
-        connectionStatusEl.textContent = t("statusOnline") || "Conectado";
+        connectionStatusEl.textContent = "Conectado";
     } else if (status === 'connecting') {
         signalIconEl.classList.add('signal-connecting');
-        connectionStatusEl.textContent = t("statusConnecting") || "Reconectando...";
+        connectionStatusEl.textContent = "Reconectando...";
     } else if (status === 'offline') {
         signalIconEl.classList.add('signal-offline');
-        connectionStatusEl.textContent = t("statusOffline") || "Sin conexión";
+        connectionStatusEl.textContent = "Sin conexión";
     }
 }
 
@@ -432,19 +417,19 @@ function initPeer(peerId, isHost, targetRoomId = null) {
             case 'peer-not-found':
             case 'peer-unavailable':
                 playBitSound("error");
-                alert(t("errorPeerNotFound") || "La sala a la que intentas acceder ya no existe, está llena o el enlace es inválido.");
+                alert("La sala a la que intentas acceder ya no existe, está llena o el enlace es inválido.");
                 break;
             case 'disconnected':
                 playBitSound("error");
-                alert(t("errorDisconnected") || "Te has desconectado del servidor de emparejamiento de forma permanente.");
+                alert("Te has desconectado del servidor de emparejamiento de forma permanente.");
                 break;
             case 'browser-incompatible':
                 playBitSound("error");
-                alert(t("errorIncompatible") || "Tu navegador no es compatible con la tecnología P2P de esta aplicación.");
+                alert("Tu navegador no es compatible con la tecnología P2P de esta aplicación.");
                 break;
             default:
                 playBitSound("error");
-                alert(t("errorDefault") || "No se pudo mantener la infraestructura de conexión estable con la sala.");
+                alert("No se pudo mantener la infraestructura de conexión estable con la sala.");
                 break;
         }
     });
@@ -467,12 +452,12 @@ function setupConnectionTrack(conn) {
                 conn.send({ type: "HOST_IDENTITY", userId: userIdEl.textContent });
             }, 400);
 
-            const systemSender = t("systemSender") || "Sistema";
-            const userJoinedMsg = `${t("userJoinedMessage") || "Usuario"} ${conn.customUserId} ${t("userJoinedSuffix") || "se ha unido."}`;
+            const systemSender = "Sistema";
+            const userJoinedMsg = `Usuario ${conn.customUserId} se ha unido.`;
             appendMessage(systemSender, userJoinedMsg, "system");
             playBitSound("join");
         } else {
-            conn.customUserId = t("verifyingHost") || "Anfitrión (Verificando...)";
+            conn.customUserId = "Anfitrión (Verificando...)";
             
             if (roomSection.classList.contains("hidden")) {
                 brandHeader.classList.add("hidden");
@@ -495,8 +480,8 @@ function setupConnectionTrack(conn) {
             conn.customUserId = data.userId; 
             updateParticipantsUI();
             
-            const systemSender = t("systemSender") || "Sistema";
-            const joinedMsg = `${t("joinedToRoomMessage") || "Te has unido a la sala del usuario"} ${conn.customUserId}.`;
+            const systemSender = "Sistema";
+            const joinedMsg = `Te has unido a la sala del usuario ${conn.customUserId}.`;
             appendMessage(systemSender, joinedMsg, "system");
             playBitSound("join");
             return;
@@ -504,7 +489,7 @@ function setupConnectionTrack(conn) {
 
         if (data.type === "ROOM_DESTROYED") {
             playBitSound("error");
-            handleRoomDestructionByHost(t("alertRoomDestroyed") || "El anfitrión ha cerrado esta sala. Redirigiendo al inicio...");
+            handleRoomDestructionByHost("El anfitrión ha cerrado esta sala. Redirigiendo al inicio...");
             return;
         }
 
@@ -514,7 +499,7 @@ function setupConnectionTrack(conn) {
                 localStream.getAudioTracks().forEach(track => track.enabled = false);
             }
             updateMicUI();
-            alert(t("alertForceMute") || "Has sido silenciado por el anfitrión de la sala.");
+            alert("Has sido silenciado por el anfitrión de la sala.");
             return;
         }
 
@@ -524,14 +509,14 @@ function setupConnectionTrack(conn) {
                 localStream.getAudioTracks().forEach(track => track.enabled = true);
             }
             updateMicUI();
-            alert(t("alertForceUnmute") || "El anfitrión ha reactivado tu micrófono.");
+            alert("El anfitrión ha reactivado tu micrófono.");
             return;
         }
 
         if (data.type === "FORCE_KICK") {
             isRoomActive = false;
             updateConnectionStatusUI('offline');
-            alert(t("alertForceKick") || "Has sido expulsado de la sala por el anfitrión.");
+            alert("Has sido expulsado de la sala por el anfitrión.");
             if (peer) peer.destroy(); 
             resetAppToHome();
             return;
@@ -553,13 +538,13 @@ function setupConnectionTrack(conn) {
         
         updateParticipantsUI();
         
-        const systemSender = t("systemSender") || "Sistema";
-        const leftMsg = `${t("userLeftMessage") || "Usuario"} ${remoteUserId} ${t("userLeftSuffix") || "ha salido."}`;
+        const systemSender = "Sistema";
+        const leftMsg = `Usuario ${remoteUserId} ha salido.`;
         appendMessage(systemSender, leftMsg, "system");
 
         if (roleEl.dataset.role === "guest" && connections.length === 0 && isRoomActive) {
             playBitSound("error");
-            handleRoomDestructionByHost(t("alertHostLost") || "Se perdió la conexión con el anfitrión. La sala ya no está disponible.");
+            handleRoomDestructionByHost("Se perdió la conexión con el anfitrión. La sala ya no está disponible.");
         }
     });
 }
@@ -629,6 +614,9 @@ async function initLocalAudio() {
     }
 }
 
+// ==========================================================================
+// VU METER Y CONTROLES MULTIMEDIA
+// ==========================================================================
 function renderVuMeter() {
     if (isMuted || !audioAnalyser) {
         vuBars.forEach(bar => { if (bar) bar.classList.remove("lit"); });
@@ -707,7 +695,6 @@ function resetAppToHome() {
     roomIdEl.textContent = "";
     userIdEl.textContent = "";
     roomCapacityEl.textContent = "";
-    roomCapacityEl.removeAttribute('data-i18n');
     roleEl.textContent = "-";
     roleEl.removeAttribute('data-role');
     shareLinkEl.value = "";
@@ -778,11 +765,11 @@ createRoomBtn.addEventListener("click", async () => {
     
     // Guardamos estado invariante en el DOM
     roleEl.dataset.role = "host";
-    roleEl.textContent = t("hostRole") || "Anfitrión"; 
+    roleEl.textContent = "Anfitrión"; 
     
     shareLinkEl.value = link;
     
-    destroyRoomBtn.textContent = t("destroyRoomBtn") || "Destruir sala";
+    destroyRoomBtn.textContent = "Destruir sala";
     destroyRoomBtn.classList.add("danger");
 
     brandHeader.classList.add("hidden");
@@ -809,7 +796,7 @@ sendBox.addEventListener("click", async () => {
         text: encryptedText
     };
 
-    appendMessage(t("youSender") || "Tú", text, "sent"); 
+    appendMessage("Tú", text, "sent"); 
     broadcastMessage(messageObj);
     messageInput.value = "";
 });
@@ -823,15 +810,15 @@ messageInput.addEventListener("keydown", (e) => {
 copyLinkBtn.addEventListener("click", async () => {
     try {
         await navigator.clipboard.writeText(shareLinkEl.value);
-        alert(t("alertCopied") || "Enlace copiado.");
+        alert("Enlace copiado.");
     } catch {
-        alert(t("alertCopyError") || "No se pudo copiar.");
+        alert("No se pudo copiar.");
     }
 });
 
 destroyRoomBtn.addEventListener("click", () => {
     if (roleEl.dataset.role === "host") {
-        const confirmDelete = confirm(t("confirmDestroyRoom") || "Esta acción eliminará la sala permanentemente para todos.");
+        const confirmDelete = confirm("Esta acción eliminará la sala permanentemente para todos.");
         if (!confirmDelete) return;
 
         broadcastMessage({ type: "ROOM_DESTROYED" });
@@ -840,17 +827,17 @@ destroyRoomBtn.addEventListener("click", () => {
             if (peer) peer.destroy();
             updateConnectionStatusUI('offline');
             resetAppToHome();
-            alert(t("alertRoomDestroyedConfirmation") || "Sala destruida.");
+            alert("Sala destruida.");
         }, 100);
 
     } else {
-        const confirmLeave = confirm(t("confirmLeaveRoom") || "¿Seguro que deseas abandonar la sala?");
+        const confirmLeave = confirm("¿Seguro que deseas abandonar la sala?");
         if (!confirmLeave) return; 
 
         if (peer) peer.destroy();
         updateConnectionStatusUI('offline');
         resetAppToHome();
-        alert(t("alertLeaveConfirmation") || "Has abandonado la sala.");
+        alert("Has abandonado la sala.");
     }
 });
 
@@ -858,7 +845,6 @@ destroyRoomBtn.addEventListener("click", () => {
 // INICIALIZACIÓN POR CICLO DE VIDA (DOM CONTENT LOADED)
 // ==========================================================================
 window.addEventListener("DOMContentLoaded", () => {
-    applyTranslations();
     initPrivacyModal();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -870,14 +856,13 @@ window.addEventListener("DOMContentLoaded", () => {
         roomIdEl.textContent = roomParam;
         userIdEl.textContent = myUserId;
         
-        roomCapacityEl.textContent = t("notAvailable") || "N/A"; 
-        roomCapacityEl.dataset.i18n = "notAvailable";
+        roomCapacityEl.textContent = "N/A"; 
         
         roleEl.dataset.role = "guest";
-        roleEl.textContent = t("guestRole") || "Invitado";      
+        roleEl.textContent = "Invitado";      
         shareLinkEl.value = window.location.href;
 
-        destroyRoomBtn.textContent = t("leaveRoomBtn") || "Abandonar sala";
+        destroyRoomBtn.textContent = "Abandonar sala";
         destroyRoomBtn.classList.remove("danger"); 
 
         isRoomActive = true;
@@ -887,7 +872,6 @@ window.addEventListener("DOMContentLoaded", () => {
             initPeer(myUserId, false, roomParam);
         });
     } else {
-        // Asegurar que la UI inicial muestre el estado de carga correcto traducido
         updateParticipantsUI();
     }
 });
