@@ -36,18 +36,26 @@
 <body>
 
     <div class="main-wrapper">
+        <!-- Selector de Idioma flotante en la esquina superior derecha -->
+        <div class="lang-selector-container" style="position: absolute; top: 15px; right: 15px; z-index: 10;">
+            <select id="langSelect">
+                <option value="es" selected>ES</option>
+                <option value="en">EN</option>
+            </select>
+        </div>
+
         <div class="container">
 
             <div id="brand-header">
                 <h1>dullchat</h1>
-                <p class="subtitle">
+                <p class="subtitle" data-i18n="brand_subtitle">
                     Crea salas privadas en un clic. Comunicación directa entre usuarios, lo que se habla aquí, se queda aquí.
                 </p>
             </div>
 
             <div id="home">
 
-                <label for="capacity">
+                <label for="capacity" data-i18n="label_capacity">
                     Capacidad de integrantes en la sala
                 </label>
 
@@ -58,7 +66,7 @@
                     <option value="50">50</option>
                 </select>
 
-                <button id="createRoom">
+                <button id="createRoom" data-i18n="btn_create_room">
                     Crear sala
                 </button>
 
@@ -67,7 +75,7 @@
             <div id="room" class="hidden">
 
                 <div class="room-controls">
-                    <button id="toggleParticipants" type="button" title="Ver participantes">
+                    <button id="toggleParticipants" type="button" title="Ver participantes" data-i18n-title="title_participants">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                             <circle cx="9" cy="7" r="4"></circle>
@@ -75,7 +83,7 @@
                             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                         </svg>
                     </button>
-                    <button id="toggleMeta" type="button" title="Información de la sala">
+                    <button id="toggleMeta" type="button" title="Información de la sala" data-i18n-title="title_room_info">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="12" cy="12" r="10"></circle>
                             <line x1="12" x2="12" y1="16" y2="12"></line>
@@ -89,15 +97,13 @@
                     <div class="chat-container" style="position: relative;">
 
                         <div id="messages">
-                            <div class="message system">
-                                <strong>Sistema:</strong> Bienvenido a DullChat.
-                            </div>
+                            <!-- El mensaje de bienvenida inicial se manejará desde el JS para que inicie en el idioma correcto -->
                         </div>
 
                         <div id="emojiPickerWrapper" class="hidden"></div>
 
                         <div class="message-box">
-                            <button id="emojiBtn" type="button" title="Insertar emoji">😊</button>
+                            <button id="emojiBtn" type="button" title="Insertar emoji" data-i18n-title="title_emoji">😊</button>
                             
                             <div id="vuMeter" class="vu-container">
                                 <div class="vu-bar vu-red"></div>
@@ -105,7 +111,7 @@
                                 <div class="vu-bar vu-green"></div>
                             </div>
 
-                            <button id="micBtn" type="button" class="mic-muted" title="Activar/Silenciar Micrófono">
+                            <button id="micBtn" type="button" class="mic-muted" title="Activar/Silenciar Micrófono" data-i18n-title="title_mic">
                                 <svg id="micIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
                                     <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -118,10 +124,11 @@
                                 type="text"
                                 id="messageInput"
                                 placeholder="Escribe un mensaje..."
+                                data-i18n-placeholder="placeholder_input"
                                 maxlength="1000"
                                 autocomplete="off"
                             >
-                            <button id="sendBox">
+                            <button id="sendBox" data-i18n="btn_send">
                                 Enviar
                             </button>
                         </div>
@@ -133,25 +140,25 @@
                     <div class="sidebar-panel">
 
                         <div id="participantsOverlay" class="participants-section hidden">
-                            <h3>Participantes</h3>
+                            <h3 data-i18n="sidebar_participants">Participantes</h3>
                             <ul id="participantsList">
-                                <li>Cargando...</li>
+                                <li data-i18n="status_loading">Cargando...</li>
                             </ul>
                         </div>
 
                         <div id="metaOverlay" class="room-meta-section hidden">
                             
                             <div class="info-meta">
-                                <p><strong>Sala:</strong> <span id="roomId">-</span></p>
-                                <p><strong>Tu ID:</strong> <span id="userId">-</span></p>
-                                <p><strong>Rol:</strong> <span id="role">-</span></p>
-                                <p><strong>Capacidad:</strong> <span id="roomCapacity">-</span></p>
-                                <p><strong>Conectados:</strong> <span id="connectedCount">1</span></p>
+                                <p><strong data-i18n="meta_room">Sala:</strong> <span id="roomId">-</span></p>
+                                <p><strong data-i18n="meta_user_id">Tu ID:</strong> <span id="userId">-</span></p>
+                                <p><strong data-i18n="meta_role">Rol:</strong> <span id="role">-</span></p>
+                                <p><strong data-i18n="meta_capacity">Capacidad:</strong> <span id="roomCapacity">-</span></p>
+                                <p><strong data-i18n="meta_connected">Conectados:</strong> <span id="connectedCount">1</span></p>
                             </div>
 
                             <div class="share-meta-box">
-                                <input type="text" id="shareLink" readonly placeholder="Enlace de la sala">
-                                <button id="copyLink">Copiar enlace</button>
+                                <input type="text" id="shareLink" readonly placeholder="Enlace de la sala" data-i18n-placeholder="placeholder_share_link">
+                                <button id="copyLink" data-i18n="btn_copy">Copiar enlace</button>
                             </div>
 
                             <div class="status-meta">
@@ -159,11 +166,11 @@
                                     <svg id="signalIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M2 20h.01M7 20v-4M12 20v-8M17 20v-12M22 20v-4" />
                                     </svg>
-                                    <span id="connectionStatus">Conectado</span>
+                                    <span id="connectionStatus" data-i18n="status_connected">Conectado</span>
                                 </div>
                             </div>
 
-                            <button id="destroyRoom" class="danger">
+                            <button id="destroyRoom" class="danger" data-i18n="btn_destroy">
                                 Destruir sala
                             </button>
 
@@ -179,25 +186,25 @@
     </div>
 
     <footer class="app-footer">
-    <p><a href="https://github.com/coffeetron832/dullchat" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;"><strong>dullchat</strong></a> v1.0.0</p>
-    <p>&copy; 2026 | jahp. Todos los derechos reservados. | <a href="#" class="disclaimer" style="text-decoration: underline; color: inherit; cursor: pointer;">Términos y Privacidad</a></p>
-        
-    <!-- Modal de Privacidad y Descargo de Responsabilidad -->
-    <div id="legalModal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h2>Aviso de Privacidad y Responsabilidad</h2>
-                <button id="closeModalBtn" class="modal-close-x">&times;</button>
-            </div>
-            <div class="modal-body" id="legalModalContent">
-                <!-- El texto se inyectará dinámicamente con JS -->
-            </div>
-            <div class="modal-footer">
-                <button id="acceptModalBtn">Entendido</button>
+        <p><a href="https://github.com/coffeetron832/dullchat" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;"><strong>dullchat</strong></a> v1.0.0</p>
+        <p>&copy; 2026 | jahp. <span data-i18n="footer_rights">Todos los derechos reservados.</span> | <a href="#" class="disclaimer" id="legalLink" style="text-decoration: underline; color: inherit; cursor: pointer;" data-i18n="footer_legal">Términos y Privacidad</a></p>
+            
+        <!-- Modal de Privacidad y Descargo de Responsabilidad -->
+        <div id="legalModal" class="modal-overlay hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2 data-i18n="modal_title">Aviso de Privacidad y Responsabilidad</h2>
+                    <button id="closeModalBtn" class="modal-close-x">&times;</button>
+                </div>
+                <div class="modal-body" id="legalModalContent">
+                    <!-- El texto se inyectará dinámicamente con JS -->
+                </div>
+                <div class="modal-footer">
+                    <button id="acceptModalBtn" data-i18n="modal_btn_accept">Entendido</button>
+                </div>
             </div>
         </div>
-    </div>
-</footer>
+    </footer>
     
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/picmo@5.8.5/dist/umd/index.js"></script>
@@ -234,7 +241,6 @@
             }
         });
 
-        // NUEVO: Lógica básica de toggle para los botones independientes de la barra lateral
         const btnPart = document.getElementById('toggleParticipants');
         const btnMeta = document.getElementById('toggleMeta');
         const overlayPart = document.getElementById('participantsOverlay');
@@ -243,16 +249,15 @@
         btnPart.addEventListener('click', (e) => {
             e.stopPropagation();
             overlayPart.classList.toggle('hidden');
-            overlayMeta.classList.add('hidden'); // Cierra el otro por comodidad
+            overlayMeta.classList.add('hidden');
         });
 
         btnMeta.addEventListener('click', (e) => {
             e.stopPropagation();
             overlayMeta.classList.toggle('hidden');
-            overlayPart.classList.add('hidden'); // Cierra el otro por comodidad
+            overlayPart.classList.add('hidden');
         });
 
-        // Ocultar los páneles flotantes al hacer click fuera en el chat
         document.addEventListener('click', (e) => {
             if (overlayPart && !overlayPart.contains(e.target) && !btnPart.contains(e.target)) {
                 overlayPart.classList.add('hidden');
