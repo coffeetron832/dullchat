@@ -141,14 +141,17 @@ export function t(key, variables = {}) {
     return text;
 }
 
-// Escanea el DOM buscando elementos con el atributo data-i18n
+// Escanea el DOM buscando elementos con el atributo data-i18n o data-i18n-placeholder
 export function applyTranslations() {
+    // Traducir contenido de texto normal
     document.querySelectorAll("[data-i18n]").forEach(el => {
         const key = el.getAttribute("data-i18n");
-        if (el.tagName === "INPUT" || el.tagName === "TEXTAREA") {
-            el.placeholder = t(key);
-        } else {
-            el.textContent = t(key);
-        }
+        el.textContent = t(key);
+    });
+
+    // Traducir placeholders específicos de inputs y textareas
+    document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+        const key = el.getAttribute("data-i18n-placeholder");
+        el.placeholder = t(key);
     });
 }
