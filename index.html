@@ -49,14 +49,16 @@
                         </select>
                     </div>
                 </div>
-                <p class="subtitle" data-i18n="header.subtitle">
+                <!-- Clave genérica para evitar anidaciones no soportadas -->
+                <p class="subtitle">
                     Crea salas privadas en un clic. Comunicación directa entre usuarios, lo que se habla aquí, se queda aquí.
                 </p>
             </div>
 
             <div id="home">
 
-                <label for="capacity" data-i18n="home.capacityLabel">
+                <!-- Clave genérica para evitar anidaciones no soportadas -->
+                <label for="capacity">
                     Capacidad de integrantes en la sala
                 </label>
 
@@ -67,7 +69,7 @@
                     <option value="50">50</option>
                 </select>
 
-                <button id="createRoom" data-i18n="home.createBtn">
+                <button id="createRoom" data-i18n="createRoom">
                     Crear sala
                 </button>
 
@@ -124,12 +126,12 @@
                             <input
                                 type="text"
                                 id="messageInput"
-                                data-i18n-placeholder="room.placeholder"
+                                data-i18n-placeholder="placeholderMessage"
                                 placeholder="Escribe un mensaje..."
                                 maxlength="1000"
                                 autocomplete="off"
                             >
-                            <button id="sendBox" data-i18n="room.sendBtn">
+                            <button id="sendBox" data-i18n="send">
                                 Enviar
                             </button>
                         </div>
@@ -141,25 +143,25 @@
                     <div class="sidebar-panel">
 
                         <div id="participantsOverlay" class="participants-section hidden">
-                            <h3 data-i18n="room.participantsTitle">Participantes</h3>
+                            <h3 data-i18n="connected">Participantes</h3>
                             <ul id="participantsList">
-                                <li data-i18n="room.loading">Cargando...</li>
+                                <li data-i18n="loading">Cargando...</li>
                             </ul>
                         </div>
 
                         <div id="metaOverlay" class="room-meta-section hidden">
                             
                             <div class="info-meta">
-                                <p><strong data-i18n="room.metaRoom">Sala:</strong> <span id="roomId">-</span></p>
-                                <p><strong data-i18n="room.metaYourId">Tu ID:</strong> <span id="userId">-</span></p>
-                                <p><strong data-i18n="room.metaRole">Rol:</strong> <span id="role">-</span></p>
-                                <p><strong data-i18n="room.metaCapacity">Capacidad:</strong> <span id="roomCapacity">-</span></p>
-                                <p><strong data-i18n="room.metaConnected">Conectados:</strong> <span id="connectedCount">1</span></p>
+                                <p><strong>Sala:</strong> <span id="roomId">-</span></p>
+                                <p><strong>Tu ID:</strong> <span id="userId">-</span></p>
+                                <p><strong data-i18n="role">Rol:</strong> <span id="role">-</span></p>
+                                <p><strong>Capacidad:</strong> <span id="roomCapacity">-</span></p>
+                                <p><strong data-i18n="connected">Conectados:</strong> <span id="connectedCount">1</span></p>
                             </div>
 
                             <div class="share-meta-box">
-                                <input type="text" id="shareLink" readonly data-i18n-placeholder="room.linkPlaceholder" placeholder="Enlace de la sala">
-                                <button id="copyLink" data-i18n="room.copyBtn">Copiar enlace</button>
+                                <input type="text" id="shareLink" readonly placeholder="Enlace de la sala">
+                                <button id="copyLink" data-i18n="copyLink">Copiar enlace</button>
                             </div>
 
                             <div class="status-meta">
@@ -167,11 +169,11 @@
                                     <svg id="signalIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M2 20h.01M7 20v-4M12 20v-8M17 20v-12M22 20v-4" />
                                     </svg>
-                                    <span id="connectionStatus" data-i18n="room.statusConnected">Conectado</span>
+                                    <span id="connectionStatus" data-i18n="connectionStatusOnline">Conectado</span>
                                 </div>
                             </div>
 
-                            <button id="destroyRoom" class="danger" data-i18n="room.destroyBtn">
+                            <button id="destroyRoom" class="danger" data-i18n="destroyRoom">
                                 Destruir sala
                             </button>
 
@@ -188,20 +190,20 @@
 
     <footer class="app-footer">
         <p><a href="https://github.com/coffeetron832/dullchat" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;"><strong>dullchat</strong></a> v1.0.0</p>
-        <p>&copy; 2026 | jahp. Todos los derechos reservados. | <a href="#" class="disclaimer" id="openDisclaimer" style="text-decoration: underline; color: inherit; cursor: pointer;" data-i18n="footer.terms">Términos y Privacidad</a></p>
+        <p>&copy; 2026 | jahp. Todos los derechos reservados. | <a href="#" class="disclaimer" id="openDisclaimer" style="text-decoration: underline; color: inherit; cursor: pointer;">Términos y Privacidad</a></p>
             
         <!-- Modal de Privacidad y Descargo de Responsabilidad -->
         <div id="legalModal" class="modal-overlay hidden">
             <div class="modal-card">
                 <div class="modal-header">
-                    <h2 data-i18n="modal.title">Aviso de Privacidad y Responsabilidad</h2>
+                    <h2 data-i18n="legalTitle">Aviso de Privacidad y Responsabilidad</h2>
                     <button id="closeModalBtn" class="modal-close-x">&times;</button>
                 </div>
                 <div class="modal-body" id="legalModalContent">
                     <!-- El texto se inyectará dinámicamente con JS -->
                 </div>
                 <div class="modal-footer">
-                    <button id="acceptModalBtn" data-i18n="modal.acceptBtn">Entendido</button>
+                    <button id="acceptModalBtn">Entendido</button>
                 </div>
             </div>
         </div>
