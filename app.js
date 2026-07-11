@@ -246,11 +246,12 @@ function generateRoomId() {
 }
 
 // ==========================================================================
-// INTERFAZ DE USUARIO Y SEÑALIZACIÓN P2P
+// INTERFAZ DE USUARIO Y SEÑALIZACIÓN P2P (DIBUJO ASIMÉTRICO)
 // ==========================================================================
 function updateParticipantsUI() {
     participantsListEl.innerHTML = "";
 
+    // Renderizar nuestro nodo propio primero
     const myLi = document.createElement("li");
     const strongEl = document.createElement("strong");
     strongEl.textContent = userIdEl.textContent;
@@ -258,10 +259,43 @@ function updateParticipantsUI() {
     myLi.appendChild(document.createTextNode(" (Tú)"));
     participantsListEl.appendChild(myLi);
 
+    const isHost = (roleEl.textContent === "Anfitrión");
+
     connections.forEach(conn => {
         const li = document.createElement("li");
-        // PRIORIDAD: Mostrar el ID legible (dXXXX) resuelto dinámicamente
-        li.textContent = conn.customUserId || "Conectando...";
+        const readableId = conn.customUserId || "Conectando...";
+        
+        if (isHost && conn.customUserId) {
+            // El anfitrión ve la lista con los controles de moderación inyectados
+            const nameSpan = document.createElement("span");
+            nameSpan.textContent = readableId + " ";
+            li.appendChild(nameSpan);
+
+            const muteBtn = document.createElement("button");
+            muteBtn.textContent = "Silenciar";
+            muteBtn.classList.add("btn-action-small");
+            muteBtn.style.marginLeft = "8px";
+            muteBtn.addEventListener("click", () => {
+                conn.send({ type: "FORCE_MUTE" });
+            });
+
+            const kickBtn = document.createElement("button");
+            kickBtn.textContent = "Expulsar";
+            kickBtn.classList.add("btn-action-small", "danger");
+            kickBtn.style.marginLeft = "4px";
+            kickBtn.addEventListener("click", () => {
+                conn.send({ type: "FORCE_KICK" });
+                // Limpieza inmediata del lado del Host para cerrar el canal de datos
+                conn.close(); 
+            });
+
+            li.appendChild(muteBtn);
+            li.appendChild(kickBtn);
+        } else {
+            // El invitado simplemente ve la lista plana estructural
+            li.textContent = readableId;
+        }
+        
         participantsListEl.appendChild(li);
     });
 
@@ -289,8 +323,6 @@ function updateConnectionStatusUI(status) {
 // INICIALIZACIÓN Y CONTROL DE PEERJS
 // ==========================================================================
 function initPeer(peerId, isHost, targetRoomId = null) {
-    // El anfitrión usa el ID de la sala como endpoint de señalización WebRTC. 
-    // El invitado usa su propio ID dXXXX aleatorio.
     peer = new Peer(peerId, {
         debug: 1 
     });
@@ -371,7 +403,6 @@ function initPeer(peerId, isHost, targetRoomId = null) {
 }
 
 function connectToPeer(targetId) {
-    // El Invitado inyecta de forma segura su ID legible dXXXX dentro de los metadatos iniciales
     const conn = peer.connect(targetId, {
         metadata: { userId: userIdEl.textContent }
     });
@@ -381,12 +412,9 @@ function connectToPeer(targetId) {
 function setupConnectionTrack(conn) {
     conn.on('open', () => {
         if (roleEl.textContent === "Anfitrión") {
-            // El Anfitrión lee el ID dXXXX enviado por el Invitado en los metadatos
             conn.customUserId = (conn.metadata && conn.metadata.userId) ? conn.metadata.userId : conn.peer;
-            
             console.log("Conectado con éxito al invitado: " + conn.customUserId);
             
-            // PROTOCOLO DE HANDSHAKE: El Anfitrión le responde de inmediato al invitado transmitiéndole su ID dXXXX real
             setTimeout(() => {
                 conn.send({ type: "HOST_IDENTITY", userId: userIdEl.textContent });
             }, 400);
@@ -394,7 +422,6 @@ function setupConnectionTrack(conn) {
             appendMessage("Sistema", `Usuario ${conn.customUserId} se ha unido.`, "system");
             playBitSound("join");
         } else {
-            // El Invitado sabe provisionalmente que se conectó con el endpoint de la sala, esperará el ID real
             conn.customUserId = "Anfitrión (Verificando...)";
             console.log("Canal abierto con el nodo central de la sala. Esperando identidad...");
             
@@ -415,10 +442,9 @@ function setupConnectionTrack(conn) {
     });
 
     conn.on('data', async (data) => {
-        // Interceptamos mensaje de control interno del Handshake de Identidad
+        // --- INTERCEPCIÓN DE PAQUETES DE CONTROL INTERNO ---
         if (data.type === "HOST_IDENTITY") {
-            const ancientId = conn.customUserId;
-            conn.customUserId = data.userId; // Reemplazamos por el ID dXXXX legible del Host
+            conn.customUserId = data.userId; 
             updateParticipantsUI();
             appendMessage("Sistema", `Te has unido a la sala del usuario ${conn.customUserId}.`, "system");
             playBitSound("join");
@@ -431,9 +457,31 @@ function setupConnectionTrack(conn) {
             return;
         }
 
+        // Lógica de moderación forzada remota (Invitado intercepta)
+        if (data.type === "FORCE_MUTE") {
+            isMuted = true;
+            if (localStream) {
+                localStream.getAudioTracks().forEach(track => track.enabled = false);
+            }
+            updateMicUI();
+            alert("Has sido silenciado por el anfitrión de la sala.");
+            return;
+        }
+
+        if (data.type === "FORCE_KICK") {
+            isRoomActive = false;
+            updateConnectionStatusUI('offline');
+            alert("Has sido expulsado de la sala por el anfitrión.");
+            if (peer) {
+                peer.destroy(); // Destruye inmediatamente la instancia para no dejar conexiones colgadas
+            }
+            resetAppToHome();
+            return;
+        }
+
+        // --- MANEJO DE MENSAJES DE TEXTO STANDARDS ---
         const decryptedText = await decryptMessage(data.text);
         appendMessage(data.sender, decryptedText, "received");
-        
         playBitSound("message");
         
         if (roleEl.textContent === "Anfitrión") {
@@ -449,7 +497,7 @@ function setupConnectionTrack(conn) {
         updateParticipantsUI();
         appendMessage("Sistema", `Usuario ${remoteUserId} ha salido.`, "system");
 
-        if (roleEl.textContent === "Invitado" && connections.length === 0) {
+        if (roleEl.textContent === "Invitado" && connections.length === 0 && isRoomActive) {
             playBitSound("error");
             handleRoomDestructionByHost("Se perdió la conexión con el anfitrión. La sala ya no está disponible.");
         }
@@ -668,12 +716,12 @@ function appendMessage(sender, text, type) {
 createRoomBtn.addEventListener("click", async () => {
     const capacity = document.getElementById("capacity").value;
     const roomId = generateRoomId();
-    const myCleanId = generateUserId(); // El Anfitrión ahora adopta un ID dXXXX limpio e indescifrable
+    const myCleanId = generateUserId(); 
 
     const link = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
 
     roomIdEl.textContent = roomId;
-    userIdEl.textContent = myCleanId; // Se imprime en pantalla su dXXXX
+    userIdEl.textContent = myCleanId; 
     roomCapacityEl.textContent = capacity;
     roleEl.textContent = "Anfitrión"; 
     shareLinkEl.value = link;
@@ -689,8 +737,6 @@ createRoomBtn.addEventListener("click", async () => {
     updateParticipantsUI();
     
     await deriveKeyFromRoomId(roomId);
-    
-    // Inicializamos con el ID de la sala para que actúe de receptor de conexiones entrantes de señalización.
     initPeer(roomId, true);
 });
 
