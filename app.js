@@ -1,4 +1,13 @@
 // ==========================================================================
+// IMPORTACIONES E INICIALIZACIÓN DE IDIOMA
+// ==========================================================================
+import { t, getLang, setLang, applyTranslations } from './i18n.js';
+
+// Configurar los botones del selector de idioma en el DOM
+document.getElementById("btnLangEs")?.addEventListener("click", () => { setLang("es"); applyTranslations(); });
+document.getElementById("btnLangEn")?.addEventListener("click", () => { setLang("en"); applyTranslations(); });
+
+// ==========================================================================
 // SELECCIÓN DE ELEMENTOS DEL DOM
 // ==========================================================================
 const createRoomBtn = document.getElementById("createRoom");
@@ -87,34 +96,6 @@ document.head.appendChild(style);
 // ==========================================================================
 // MANEJO DEL MODAL DE DESCARGO DE RESPONSABILIDAD (PRIVACIDAD)
 // ==========================================================================
-const legalText = `
-    <p><strong>dullchat</strong> es una plataforma experimental de mensajería instantánea distribuida y serverless diseñada bajo principios de privacidad absoluta.</p>
-    
-    <h3>1. Naturaleza del Servicio y Cifrado</h3>
-    <p>Toda la comunicación entre dispositivos se realiza mediante cifrado de extremo a extremo (E2EE).</p>
-    <ul>
-        <li><strong>Sin almacenamiento central:</strong> Los mensajes, archivos, credenciales y metadatos se procesan estrictamente de manera local en tu navegador y se transmiten directamente de par a par (P2P).</li>
-        <li>No mantenemos servidores de bases de datos ni respaldos. Una vez cerrada la sala o la pestaña, los datos se eliminan de forma permanente e irrecuperable.</li>
-    </ul>
-
-    <h3>2. Exclusión de Responsabilidad por Contenido</h3>
-    <p>Debido a la arquitectura técnica descentralizada de la aplicación, los desarrolladores no tienen la capacidad de interceptar, auditar, moderar ni bloquear el contenido de ninguna sala.</p>
-    <ul>
-        <li>El usuario es el único y exclusivo responsable de la información compartida durante las sesiones.</li>
-        <li>No asumimos responsabilidad legal alguna por usos inapropiados, ilícitos, difamatorios o fraudulentos del servicio.</li>
-    </ul>
-
-    <h3>3. Gestión de Enlaces y Claves de Acceso</h3>
-    <p>Los identificadores de las salas de chat actúan como llaves criptográficas generadas localmente.</p>
-    <ul>
-        <li>Es tu estricta responsabilidad custodiar estos enlaces y compartirlos únicamente con destinatarios autorizados.</li>
-        <li>Si un tercero accede a tu enlace, podrá unirse a la sala. El sistema no provee herramientas centralizadas para la revocación remota de accesos ni recuperación de salas perdidas.</li>
-    </ul>
-
-    <h3>4. Exclusión de Garantías Técnicas</h3>
-    <p>El software se entrega "tal cual" (As Is), sin garantías de disponibilidad permanente o inmunidad ante fallas de red asociadas a los navegadores o proxies de conexión WebRTC/STUN de terceros.</p>
-`;
-
 function initPrivacyModal() {
     const disclaimerBtn = document.querySelector('.disclaimer');
     const modal = document.getElementById('legalModal');
@@ -125,7 +106,11 @@ function initPrivacyModal() {
     if (disclaimerBtn && modal) {
         disclaimerBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            modalContent.innerHTML = legalText;
+            if (modalContent) {
+                modalContent.innerHTML = t("legalTextHTML") || `
+                    <p><strong>dullchat</strong> es una plataforma experimental...</p>
+                `;
+            }
             modal.classList.remove('hidden');
         });
     }
@@ -249,7 +234,7 @@ async function decryptMessage(base64Data) {
         return new TextDecoder().decode(decryptedBuffer);
     } catch (err) {
         console.error("Error al descifrar el mensaje:", err);
-        return "[Error: No se pudo descifrar este mensaje. Clave inválida o corrupta]";
+        return t("decryptionError") || "[Error: No se pudo descifrar este mensaje. Clave inválida o corrupta]";
     }
 }
 
@@ -280,14 +265,14 @@ function updateParticipantsUI() {
     const strongEl = document.createElement("strong");
     strongEl.textContent = userIdEl.textContent;
     myLi.appendChild(strongEl);
-    myLi.appendChild(document.createTextNode(" (Tú)"));
+    myLi.appendChild(document.createTextNode(` ${t("youLabel") || "(Tú)"}`));
     participantsListEl.appendChild(myLi);
 
-    const isHost = (roleEl.textContent === "Anfitrión");
+    const isHost = (roleEl.textContent === t("hostRole") || roleEl.textContent === "Anfitrión");
 
     connections.forEach(conn => {
         const li = document.createElement("li");
-        const readableId = conn.customUserId || "Conectando...";
+        const readableId = conn.customUserId || t("connectingStatus") || "Conectando...";
         
         if (isHost && conn.customUserId) {
             const nameSpan = document.createElement("span");
@@ -299,7 +284,7 @@ function updateParticipantsUI() {
 
             const isPeerMuted = mutedPeersByHost.has(conn.peer);
             const muteBtn = document.createElement("button");
-            muteBtn.textContent = isPeerMuted ? "Reactivar" : "Silenciar";
+            muteBtn.textContent = isPeerMuted ? (t("unmuteBtn") || "Reactivar") : (t("muteBtn") || "Silenciar");
             muteBtn.classList.add("btn-mod-small");
             if (isPeerMuted) muteBtn.style.backgroundColor = "#4a4a4a";
 
@@ -315,7 +300,7 @@ function updateParticipantsUI() {
             });
 
             const kickBtn = document.createElement("button");
-            kickBtn.textContent = "Expulsar";
+            kickBtn.textContent = t("kickBtn") || "Expulsar";
             kickBtn.classList.add("btn-mod-small", "danger");
             kickBtn.addEventListener("click", () => {
                 conn.send({ type: "FORCE_KICK" });
@@ -342,13 +327,13 @@ function updateConnectionStatusUI(status) {
     
     if (status === 'online') {
         signalIconEl.classList.add('signal-online');
-        connectionStatusEl.textContent = "Conectado";
+        connectionStatusEl.textContent = t("statusOnline") || "Conectado";
     } else if (status === 'connecting') {
         signalIconEl.classList.add('signal-connecting');
-        connectionStatusEl.textContent = "Reconectando...";
+        connectionStatusEl.textContent = t("statusConnecting") || "Reconectando...";
     } else if (status === 'offline') {
         signalIconEl.classList.add('signal-offline');
-        connectionStatusEl.textContent = "Sin conexión";
+        connectionStatusEl.textContent = t("statusOffline") || "Sin conexión";
     }
 }
 
@@ -417,19 +402,19 @@ function initPeer(peerId, isHost, targetRoomId = null) {
             case 'peer-not-found':
             case 'peer-unavailable':
                 playBitSound("error");
-                alert("La sala a la que intentas acceder ya no existe, está llena o el enlace es inválido.");
+                alert(t("errorPeerNotFound") || "La sala a la que intentas acceder ya no existe, está llena o el enlace es inválido.");
                 break;
             case 'disconnected':
                 playBitSound("error");
-                alert("Te has desconectado del servidor de emparejamiento de forma permanente.");
+                alert(t("errorDisconnected") || "Te has desconectado del servidor de emparejamiento de forma permanente.");
                 break;
             case 'browser-incompatible':
                 playBitSound("error");
-                alert("Tu navegador no es compatible con la tecnología P2P de esta aplicación.");
+                alert(t("errorIncompatible") || "Tu navegador no es compatible con la tecnología P2P de esta aplicación.");
                 break;
             default:
                 playBitSound("error");
-                alert("No se pudo mantener la infraestructura de conexión estable con la sala.");
+                alert(t("errorDefault") || "No se pudo mantener la infraestructura de conexión estable con la sala.");
                 break;
         }
     });
@@ -444,7 +429,8 @@ function connectToPeer(targetId) {
 
 function setupConnectionTrack(conn) {
     conn.on('open', () => {
-        if (roleEl.textContent === "Anfitrión") {
+        const currentRole = roleEl.textContent;
+        if (currentRole === t("hostRole") || currentRole === "Anfitrión") {
             conn.customUserId = (conn.metadata && conn.metadata.userId) ? conn.metadata.userId : conn.peer;
             console.log("Conectado con éxito al invitado: " + conn.customUserId);
             
@@ -452,10 +438,10 @@ function setupConnectionTrack(conn) {
                 conn.send({ type: "HOST_IDENTITY", userId: userIdEl.textContent });
             }, 400);
 
-            appendMessage("Sistema", `Usuario ${conn.customUserId} se ha unido.`, "system");
+            appendMessage(t("systemSender") || "Sistema", `${t("userJoinedMessage") || "Usuario"} ${conn.customUserId} ${t("userJoinedSuffix") || "se ha unido."}`, "system");
             playBitSound("join");
         } else {
-            conn.customUserId = "Anfitrión (Verificando...)";
+            conn.customUserId = t("verifyingHost") || "Anfitrión (Verificando...)";
             console.log("Canal abierto con el nodo central de la sala. Esperando identidad...");
             
             if (roomSection.classList.contains("hidden")) {
@@ -479,14 +465,14 @@ function setupConnectionTrack(conn) {
         if (data.type === "HOST_IDENTITY") {
             conn.customUserId = data.userId; 
             updateParticipantsUI();
-            appendMessage("Sistema", `Te has unido a la sala del usuario ${conn.customUserId}.`, "system");
+            appendMessage(t("systemSender") || "Sistema", `${t("joinedToRoomMessage") || "Te has unido a la sala del usuario"} ${conn.customUserId}.`, "system");
             playBitSound("join");
             return;
         }
 
         if (data.type === "ROOM_DESTROYED") {
             playBitSound("error");
-            handleRoomDestructionByHost("El anfitrión ha cerrado esta sala. Redirigiendo al inicio...");
+            handleRoomDestructionByHost(t("alertRoomDestroyed") || "El anfitrión ha cerrado esta sala. Redirigiendo al inicio...");
             return;
         }
 
@@ -497,7 +483,7 @@ function setupConnectionTrack(conn) {
                 localStream.getAudioTracks().forEach(track => track.enabled = false);
             }
             updateMicUI();
-            alert("Has sido silenciado por el anfitrión de la sala.");
+            alert(t("alertForceMute") || "Has sido silenciado por el anfitrión de la sala.");
             return;
         }
 
@@ -507,14 +493,14 @@ function setupConnectionTrack(conn) {
                 localStream.getAudioTracks().forEach(track => track.enabled = true);
             }
             updateMicUI();
-            alert("El anfitrión ha reactivado tu micrófono.");
+            alert(t("alertForceUnmute") || "El anfitrión ha reactivado tu micrófono.");
             return;
         }
 
         if (data.type === "FORCE_KICK") {
             isRoomActive = false;
             updateConnectionStatusUI('offline');
-            alert("Has sido expulsado de la sala por el anfitrión.");
+            alert(t("alertForceKick") || "Has sido expulsado de la sala por el anfitrión.");
             if (peer) {
                 peer.destroy(); 
             }
@@ -527,7 +513,8 @@ function setupConnectionTrack(conn) {
         appendMessage(data.sender, decryptedText, "received");
         playBitSound("message");
         
-        if (roleEl.textContent === "Anfitrión") {
+        const currentRole = roleEl.textContent;
+        if (currentRole === t("hostRole") || currentRole === "Anfitrión") {
             broadcastMessage(data, conn.peer);
         }
     });
@@ -539,11 +526,12 @@ function setupConnectionTrack(conn) {
         mutedPeersByHost.delete(conn.peer);
         
         updateParticipantsUI();
-        appendMessage("Sistema", `Usuario ${remoteUserId} ha salido.`, "system");
+        appendMessage(t("systemSender") || "Sistema", `${t("userLeftMessage") || "Usuario"} ${remoteUserId} ${t("userLeftSuffix") || "ha salido."}`, "system");
 
-        if (roleEl.textContent === "Invitado" && connections.length === 0 && isRoomActive) {
+        const currentRole = roleEl.textContent;
+        if ((currentRole === t("guestRole") || currentRole === "Invitado") && connections.length === 0 && isRoomActive) {
             playBitSound("error");
-            handleRoomDestructionByHost("Se perdió la conexión con el anfitrión. La sala ya no está disponible.");
+            handleRoomDestructionByHost(t("alertHostLost") || "Se perdió la conexión con el anfitrión. La sala ya no está disponible.");
         }
     });
 }
@@ -704,7 +692,7 @@ function resetAppToHome() {
     roleEl.textContent = "-";
     shareLinkEl.value = "";
     messagesContainer.innerHTML = ""; 
-    participantsListEl.innerHTML = "<li>Cargando...</li>";
+    participantsListEl.innerHTML = `<li>${t("loadingText") || "Cargando..."}</li>`;
     cryptoKey = null; 
     mutedPeersByHost.clear();
 
@@ -768,10 +756,10 @@ createRoomBtn.addEventListener("click", async () => {
     roomIdEl.textContent = roomId;
     userIdEl.textContent = myCleanId; 
     roomCapacityEl.textContent = capacity;
-    roleEl.textContent = "Anfitrión"; 
+    roleEl.textContent = t("hostRole") || "Anfitrión"; 
     shareLinkEl.value = link;
     
-    destroyRoomBtn.textContent = "Destruir sala";
+    destroyRoomBtn.textContent = t("destroyRoomBtn") || "Destruir sala";
     destroyRoomBtn.classList.add("danger");
 
     brandHeader.classList.add("hidden");
@@ -798,7 +786,7 @@ sendBox.addEventListener("click", async () => {
         text: encryptedText
     };
 
-    appendMessage("Tú", text, "sent"); 
+    appendMessage(t("youSender") || "Tú", text, "sent"); 
     broadcastMessage(messageObj);
     messageInput.value = "";
 });
@@ -812,15 +800,16 @@ messageInput.addEventListener("keydown", (e) => {
 copyLinkBtn.addEventListener("click", async () => {
     try {
         await navigator.clipboard.writeText(shareLinkEl.value);
-        alert("Enlace copiado.");
+        alert(t("alertCopied") || "Enlace copiado.");
     } catch {
-        alert("No se pudo copiar.");
+        alert(t("alertCopyError") || "No se pudo copiar.");
     }
 });
 
 destroyRoomBtn.addEventListener("click", () => {
-    if (roleEl.textContent === "Anfitrión") {
-        const confirmDelete = confirm("Esta acción eliminará la sala permanentemente para todos.");
+    const currentRole = roleEl.textContent;
+    if (currentRole === t("hostRole") || currentRole === "Anfitrión") {
+        const confirmDelete = confirm(t("confirmDestroyRoom") || "Esta acción eliminará la sala permanentemente para todos.");
         if (!confirmDelete) return;
 
         broadcastMessage({ type: "ROOM_DESTROYED" });
@@ -829,17 +818,17 @@ destroyRoomBtn.addEventListener("click", () => {
             if (peer) peer.destroy();
             updateConnectionStatusUI('offline');
             resetAppToHome();
-            alert("Sala destruida.");
+            alert(t("alertRoomDestroyedConfirmation") || "Sala destruida.");
         }, 100);
 
     } else {
-        const confirmLeave = confirm("¿Seguro que deseas abandonar la sala?");
+        const confirmLeave = confirm(t("confirmLeaveRoom") || "¿Seguro que deseas abandonar la sala?");
         if (!confirmLeave) return; 
 
         if (peer) peer.destroy();
         updateConnectionStatusUI('offline');
         resetAppToHome();
-        alert("Has abandonado la sala.");
+        alert(t("alertLeaveConfirmation") || "Has abandonado la sala.");
     }
 });
 
@@ -847,6 +836,9 @@ destroyRoomBtn.addEventListener("click", () => {
 // INICIALIZACIÓN POR CICLO DE VIDA (DOM CONTENT LOADED)
 // ==========================================================================
 window.addEventListener("DOMContentLoaded", () => {
+    // Aplicar traducciones iniciales basadas en el idioma activo
+    applyTranslations();
+    
     initPrivacyModal();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -858,10 +850,10 @@ window.addEventListener("DOMContentLoaded", () => {
         roomIdEl.textContent = roomParam;
         userIdEl.textContent = myUserId;
         roomCapacityEl.textContent = "N/A"; 
-        roleEl.textContent = "Invitado";      
+        roleEl.textContent = t("guestRole") || "Invitado";      
         shareLinkEl.value = window.location.href;
 
-        destroyRoomBtn.textContent = "Abandonar sala";
+        destroyRoomBtn.textContent = t("leaveRoomBtn") || "Abandonar sala";
         destroyRoomBtn.classList.remove("danger"); 
 
         isRoomActive = true;
