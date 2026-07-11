@@ -1,3 +1,143 @@
+// ==========================================
+// DICCIONARIO DE IDIOMAS Y TRADUCCIÓN
+// ==========================================
+
+const translations = {
+    es: {
+        meta_title: "dullchat - Salas de chat privadas",
+        brand_subtitle: "Crea salas privadas en un clic. Comunicación directa entre usuarios, lo que se habla aquí, se queda aquí.",
+        label_capacity: "Capacidad de integrantes en la sala",
+        btn_create_room: "Crear sala",
+        title_participants: "Ver participantes",
+        title_room_info: "Información de la sala",
+        title_emoji: "Insertar emoji",
+        title_mic: "Activar/Silenciar Micrófono",
+        placeholder_input: "Escribe un mensaje...",
+        btn_send: "Enviar",
+        sidebar_participants: "Participantes",
+        status_loading: "Cargando...",
+        meta_room: "Sala:",
+        meta_user_id: "Tu ID:",
+        meta_role: "Rol:",
+        meta_capacity: "Capacidad:",
+        meta_connected: "Conectados:",
+        placeholder_share_link: "Enlace de la sala",
+        btn_copy: "Copiar enlace",
+        status_connected: "Conectado",
+        btn_destroy: "Destruir sala",
+        footer_rights: "Todos los derechos reservados.",
+        footer_legal: "Términos y Privacidad",
+        modal_title: "Aviso de Privacidad y Responsabilidad",
+        modal_btn_accept: "Entendido",
+        // Textos dinámicos del sistema (para usar en tus logs de chat)
+        sys_welcome: "Bienvenido a dullchat. Esperando conexiones directas peer-to-peer...",
+        sys_copied: "¡Enlace copiado al portapapeles!",
+        sys_role_host: "Anfitrión",
+        sys_role_guest: "Invitado"
+    },
+    en: {
+        meta_title: "dullchat - Private chat rooms",
+        brand_subtitle: "Create private rooms in one click. Direct communication between users, what is said here, stays here.",
+        label_capacity: "Room capacity",
+        btn_create_room: "Create room",
+        title_participants: "View participants",
+        title_room_info: "Room information",
+        title_emoji: "Insert emoji",
+        title_mic: "Toggle Microphone",
+        placeholder_input: "Type a message...",
+        btn_send: "Send",
+        sidebar_participants: "Participants",
+        status_loading: "Loading...",
+        meta_room: "Room:",
+        meta_user_id: "Your ID:",
+        meta_role: "Role:",
+        meta_capacity: "Capacity:",
+        meta_connected: "Connected:",
+        placeholder_share_link: "Room link",
+        btn_copy: "Copy link",
+        status_connected: "Connected",
+        btn_destroy: "Destroy room",
+        footer_rights: "All rights reserved.",
+        footer_legal: "Terms & Privacy",
+        modal_title: "Privacy & Liability Notice",
+        modal_btn_accept: "Understood",
+        sys_welcome: "Welcome to dullchat. Waiting for direct peer-to-peer connections...",
+        sys_copied: "Link copied to clipboard!",
+        sys_role_host: "Host",
+        sys_role_guest: "Guest"
+    }
+};
+
+// Texto legal dinámico (por comodidad debido a su extensión)
+const legalTexts = {
+    es: `<h3>Cifrado P2P (Peer-to-Peer)</h3>
+         <p>Esta aplicación funciona de navegador a navegador mediante WebRTC. Los mensajes y el audio no pasan por ningún servidor centralizado, lo que garantiza una comunicación directa.</p>
+         <h3>Sin Registros</h3>
+         <p>No guardamos datos personales, cookies de rastreo, ni logs de tus conversaciones. Cuando cierras o destruyes la sala, la información desaparece para siempre.</p>
+         <h3>Responsabilidad</h3>
+         <p>El uso de esta herramienta es bajo tu propia responsabilidad. Asegúrate de compartir el enlace de acceso únicamente con personas de confianza.</p>`,
+    en: `<h3>P2P Encryption (Peer-to-Peer)</h3>
+         <p>This application works browser-to-browser via WebRTC. Messages and audio do not pass through any centralized server, ensuring direct communication.</p>
+         <h3>No Logs</h3>
+         <p>We do not store personal data, tracking cookies, or history of your conversations. When you close or destroy the room, the data is gone forever.</p>
+         <h3>Liability</h3>
+         <p>The use of this tool is at your own risk. Make sure to share the access link only with trusted people.</p>`
+};
+
+// Guardar idioma preferido por el usuario en localStorage
+let currentLang = localStorage.getItem('dullchat_lang') || 'es';
+
+function setLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('dullchat_lang', lang);
+    
+    // Cambiar atributo lang en la raíz del documento
+    document.getElementById('html-root').setAttribute('lang', lang);
+    
+    // Asegurar que el select refleje el idioma actual
+    document.getElementById('langSelect').value = lang;
+
+    // 1. Traducir textos estándar (innerText)
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[lang][key]) {
+            el.innerText = translations[lang][key];
+        }
+    });
+
+    // 2. Traducir placeholders de inputs
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const key = el.getAttribute('data-i18n-placeholder');
+        if (translations[lang][key]) {
+            el.setAttribute('placeholder', translations[lang][key]);
+        }
+    });
+
+    // 3. Traducir títulos/tooltips de los botones de control
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const key = el.getAttribute('data-i18n-title');
+        if (translations[lang][key]) {
+            el.setAttribute('title', translations[lang][key]);
+        }
+    });
+
+    // 4. Inyectar texto legal en el modal
+    const modalBody = document.getElementById('legalModalContent');
+    if (modalBody) {
+        modalBody.innerHTML = legalTexts[lang];
+    }
+}
+
+// Escuchar cambios en el selector de idioma
+document.getElementById('langSelect').addEventListener('change', (e) => {
+    setLanguage(e.target.value);
+});
+
+// Inicializar el idioma al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    setLanguage(currentLang);
+});
+
 // ==========================================================================
 // SELECCIÓN DE ELEMENTOS DEL DOM
 // ==========================================================================
